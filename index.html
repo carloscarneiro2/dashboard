@@ -492,7 +492,7 @@
         <div class="panel-header">
           <div>
             <h3>Reclamações por Status</h3>
-            <span>Visão geral do andamento das reclamações</span>
+            <span>Clique em um status para filtrar o detalhamento</span>
           </div>
         </div>
         <canvas id="chart-status"></canvas>
@@ -504,7 +504,7 @@
       <div class="panel-header">
         <div>
           <h3>Detalhamento das Reclamações</h3>
-          <span>Lista completa filtrada pelas opções acima</span>
+          <span>Lista completa filtrada pelas opções acima ou pelo gráfico</span>
         </div>
       </div>
       <table>
@@ -539,6 +539,9 @@
     ];
 
     let dadosFiltrados = [...dadosOriginais];
+    let filtroAtual = "todas";       // "todas", "Pendente", "Em análise", "Resolvido"
+    let chartTipo, chartStatus;
+    let currentStatuses = [];        // labels atuais do gráfico de status
 
     // ===== 2. Referências de elementos =====
     const elTotal       = document.getElementById("card-total");
@@ -547,7 +550,6 @@
     const elPercentual  = document.getElementById("card-percentual");
     const elTbody       = document.getElementById("tbody-reclamacoes");
     const elSubtitle    = document.getElementById("subtitle-filter");
-
     const filtroBtns    = document.querySelectorAll(".filter-btn");
 
     // Pesquisa / histórico
@@ -561,9 +563,29 @@
     const historyImage  = document.getElementById("history-image");
     const btnSaveHistory= document.getElementById("btn-save-history");
 
-    // ===== 3. Dashboard (cards, gráficos, tabela) =====
-    let chartTipo, chartStatus;
+    // ===== 3. Função de filtro genérica (usada por botões e gráfico) =====
+    function aplicarFiltroStatus(status) {
+      filtroAtual = status;
 
+      // Atualiza botões
+      filtroBtns.forEach(b => {
+        const s = b.getAttribute("data-status");
+        b.classList.toggle("active", s === status);
+        if (status === "todas" && s === "todas") b.classList.add("active");
+      });
+
+      if (status === "todas") {
+        dadosFiltrados = [...dadosOriginais];
+        elSubtitle.textContent = "Visão geral de todas as reclamações";
+      } else {
+        dadosFiltrados = dadosOriginais.filter(r => r.status === status);
+        elSubtitle.textContent = `Filtrando por status: ${status}`;
+      }
+
+      atualizarDashboard();
+    }
+
+    // ===== 4. Dashboard (cards, gráficos, tabela) =====
     function atualizarDashboard() {
       const total = dadosFiltrados.length;
       const resolvidas = dadosFiltrados.filter(r => r.status === "Resolvido").length;
@@ -596,9 +618,9 @@
         dadosFiltrados.filter(r => r.tipoProblema === t).length
       );
 
-      // dados por status
-      const statuses = [...new Set(dadosFiltrados.map(r => r.status))];
-      const qtdPorStatus = statuses.map(s =>
+      // dados por status (para o gráfico)
+      currentStatuses = [...new Set(dadosFiltrados.map(r => r.status))];
+      const qtdPorStatus = currentStatuses.map(s =>
         dadosFiltrados.filter(r => r.status === s).length
       );
 
@@ -633,48 +655,54 @@
       // gráfico status
       const ctxStatus = document.getElementById("chart-status");
       const coresStatus = ["#3b82f6", "#ec4899", "#f97316", "#22c55e"];
+
+      const chartStatusConfig = {
+        type: "doughnut",
+        data: {
+          labels: currentStatuses,
+          datasets: [
+            {
+              data: qtdPorStatus,
+              backgroundColor: coresStatus.slice(0, currentStatuses.length)
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          onClick: (event, elements) => {
+            if (!elements.length) return;
+            const index = elements[0].index;
+            const statusClicado = currentStatuses[index];
+
+            // Se já estiver filtrando por esse status, voltar para "todas"
+            if (filtroAtual === statusClicado) {
+              aplicarFiltroStatus("todas");
+            } else {
+              aplicarFiltroStatus(statusClicado);
+            }
+          }
+        }
+      };
+
       if (!chartStatus) {
-        chartStatus = new Chart(ctxStatus, {
-          type: "doughnut",
-          data: {
-            labels: statuses,
-            datasets: [
-              {
-                data: qtdPorStatus,
-                backgroundColor: coresStatus.slice(0, statuses.length)
-              }
-            ]
-          },
-          options: { responsive: true }
-        });
+        chartStatus = new Chart(ctxStatus, chartStatusConfig);
       } else {
-        chartStatus.data.labels = statuses;
+        chartStatus.data.labels = currentStatuses;
         chartStatus.data.datasets[0].data = qtdPorStatus;
+        chartStatus.options.onClick = chartStatusConfig.options.onClick;
         chartStatus.update();
       }
     }
 
-    // ===== 4. Filtro por status =====
+    // ===== 5. Filtro por status (botões) =====
     filtroBtns.forEach(btn => {
       btn.addEventListener("click", () => {
-        filtroBtns.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
         const status = btn.getAttribute("data-status");
-
-        if (status === "todas") {
-          dadosFiltrados = [...dadosOriginais];
-          elSubtitle.textContent = "Visão geral de todas as reclamações";
-        } else {
-          dadosFiltrados = dadosOriginais.filter(r => r.status === status);
-          elSubtitle.textContent = `Filtrando por status: ${status}`;
-        }
-
-        atualizarDashboard();
+        aplicarFiltroStatus(status);
       });
     });
 
-    // ===== 5. Histórico – armazenamento local =====
+    // ===== 6. Histórico – armazenamento local =====
     const LS_KEY = "historicoReclamacoes"; // localStorage
 
     function carregarHistoricoCompleto() {
@@ -737,7 +765,7 @@
       });
     }
 
-    // ===== 6. Pesquisa por ID =====
+    // ===== 7. Pesquisa por ID =====
     let idSelecionado = null;
 
     function buscarPorId() {
@@ -783,7 +811,7 @@
       if (e.key === "Enter") buscarPorId();
     });
 
-    // ===== 7. Salvar novo histórico =====
+    // ===== 8. Salvar novo histórico =====
     btnSaveHistory.addEventListener("click", () => {
       if (!idSelecionado) {
         alert("Primeiro pesquise e selecione uma reclamação pelo ID.");
@@ -804,7 +832,6 @@
 
       const file = historyImage.files[0];
       if (!file) {
-        // sem imagem
         salvarEntradaHistorico(idSelecionado, entradaBase);
         historyText.value = "";
         historyImage.value = "";
@@ -812,7 +839,6 @@
         return;
       }
 
-      // com imagem: ler como base64 (DataURL)
       const reader = new FileReader();
       reader.onload = function(ev) {
         entradaBase.imagemDataUrl = ev.target.result;
@@ -824,13 +850,13 @@
       reader.readAsDataURL(file);
     });
 
-    // ===== 8. Tema claro/escuro =====
+    // ===== 9. Tema claro/escuro =====
     const toggleThemeBtn = document.getElementById("toggle-theme");
     toggleThemeBtn.addEventListener("click", () => {
       document.body.classList.toggle("dark");
     });
 
-    // ===== 9. Inicialização =====
+    // ===== 10. Inicialização =====
     atualizarDashboard();
   </script>
 </body>
