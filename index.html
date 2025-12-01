@@ -75,4 +75,486 @@
       border-radius: 999px;
       padding: 6px 14px;
       font-size: 12px;
-      cur
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.15s ease;
+    }
+    .btn span.icon {
+      font-size: 14px;
+    }
+    .btn:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+    }
+    .btn-toggle {
+      background: #111827;
+      color: #f9fafb;
+      border-color: #111827;
+    }
+    body.dark .btn-toggle {
+      background: #f9fafb;
+      color: #111827;
+      border-color: #f9fafb;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .card {
+      background: var(--bg-card);
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .card-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 14px;
+    }
+    .card-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .card-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 14px 16px 18px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      margin-bottom: 18px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .panel-header h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+    .panel-header span {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .filters {
+      display: inline-flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: transparent;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: 0.15s ease;
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      color: #f9fafb;
+      border-color: var(--accent);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.2fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    thead {
+      background: #e0f2fe;
+    }
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    th {
+      text-align: left;
+      font-weight: 600;
+    }
+    tbody tr:hover {
+      background: rgba(148, 163, 184, 0.10);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(148, 163, 184, 0.06);
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 900px) {
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .shell {
+        padding-inline: 10px;
+      }
+      .cards {
+        grid-template-columns: 1fr;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top-bar">
+      <div class="title-block">
+        <h1>Dashboard de Reclamações</h1>
+        <span id="subtitle-filter">Visão geral de todas as reclamações</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-toggle" id="toggle-theme">
+          <span class="icon">🌗</span> Tema claro/escuro
+        </button>
+        <span class="badge">
+          <span>🧪</span> Demo com dados fictícios
+        </span>
+      </div>
+    </div>
+
+    <!-- CARDS -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Total de Reclamações</span>
+          <div class="card-icon">📊</div>
+        </div>
+        <div class="card-value" id="card-total"></div>
+        <div class="card-sub">Quantidade no período filtrado</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Reclamações Resolvidas</span>
+          <div class="card-icon">✅</div>
+        </div>
+        <div class="card-value" id="card-resolvidas"></div>
+        <div class="card-sub">Finalizadas com solução</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Reclamações Pendentes</span>
+          <div class="card-icon">⏳</div>
+        </div>
+        <div class="card-value" id="card-pendentes"></div>
+        <div class="card-sub">Ainda aguardando tratativa</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">% Resolvidas</span>
+          <div class="card-icon">📈</div>
+        </div>
+        <div class="card-value" id="card-percentual"></div>
+        <div class="card-sub">Taxa de resolução sobre o total</div>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Filtros rápidos</h3>
+          <span>Use para analisar apenas um status específico</span>
+        </div>
+        <div class="filters">
+          <button class="filter-btn active" data-status="todas">Todas</button>
+          <button class="filter-btn" data-status="Pendente">Pendentes</button>
+          <button class="filter-btn" data-status="Em análise">Em análise</button>
+          <button class="filter-btn" data-status="Resolvido">Resolvidas</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="charts-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>Reclamações por Tipo de Problema</h3>
+            <span>Distribuição dos problemas mais recorrentes</span>
+          </div>
+        </div>
+        <canvas id="chart-tipo"></canvas>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>Reclamações por Status</h3>
+            <span>Visão geral do andamento das reclamações</span>
+          </div>
+        </div>
+        <canvas id="chart-status"></canvas>
+      </div>
+    </div>
+
+    <!-- TABELA -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Detalhamento das Reclamações</h3>
+          <span>Lista completa filtrada pelas opções acima</span>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Data</th>
+            <th>Tipo de Problema</th>
+            <th>Status</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-reclamacoes"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // ===== 1. Dados base (igual sua planilha) =====
+    const dadosOriginais = [
+      {
+        id: 1,
+        cliente: "João Silva",
+        data: "2025-01-05",
+        tipoProblema: "Atraso na entrega",
+        descricao: "Produto chegou 3 dias após o prazo",
+        status: "Pendente"
+      },
+      {
+        id: 2,
+        cliente: "Maria Oliveira",
+        data: "2025-01-06",
+        tipoProblema: "Produto danificado",
+        descricao: "Item chegou com arranhões",
+        status: "Em análise"
+      },
+      {
+        id: 3,
+        cliente: "Carlos Santos",
+        data: "2025-01-07",
+        tipoProblema: "Cobrança indevida",
+        descricao: "Cobrança adicional no cartão",
+        status: "Resolvido"
+      },
+      {
+        id: 4,
+        cliente: "Ana Souza",
+        data: "2025-01-08",
+        tipoProblema: "Atendimento ruim",
+        descricao: "Mal atendimento via telefone",
+        status: "Pendente"
+      },
+      {
+        id: 5,
+        cliente: "Lucas Pereira",
+        data: "2025-01-09",
+        tipoProblema: "Erro no pedido",
+        descricao: "Pedido veio diferente do que foi solicitado",
+        status: "Em análise"
+      }
+    ];
+
+    let dadosFiltrados = [...dadosOriginais];
+
+    // ===== 2. Referências de elementos =====
+    const elTotal = document.getElementById("card-total");
+    const elResolvidas = document.getElementById("card-resolvidas");
+    const elPendentes = document.getElementById("card-pendentes");
+    const elPercentual = document.getElementById("card-percentual");
+    const elTbody = document.getElementById("tbody-reclamacoes");
+    const elSubtitle = document.getElementById("subtitle-filter");
+
+    const filtroBtns = document.querySelectorAll(".filter-btn");
+
+    // ===== 3. Função para atualizar indicadores, gráficos e tabela =====
+    let chartTipo, chartStatus;
+
+    function atualizarDashboard() {
+      const total = dadosFiltrados.length;
+      const resolvidas = dadosFiltrados.filter(r => r.status === "Resolvido").length;
+      const pendentes = dadosFiltrados.filter(r => r.status === "Pendente").length;
+      const percentualResolvidas = total > 0 ? (resolvidas / total) * 100 : 0;
+
+      elTotal.textContent = total;
+      elResolvidas.textContent = resolvidas;
+      elPendentes.textContent = pendentes;
+      elPercentual.textContent = percentualResolvidas.toFixed(0) + "%";
+
+      // preencher tabela
+      elTbody.innerHTML = "";
+      dadosFiltrados.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.id}</td>
+          <td>${r.cliente}</td>
+          <td>${new Date(r.data).toLocaleDateString("pt-BR")}</td>
+          <td>${r.tipoProblema}</td>
+          <td>${r.status}</td>
+          <td>${r.descricao}</td>
+        `;
+        elTbody.appendChild(tr);
+      });
+
+      // dados por tipo
+      const tipos = [...new Set(dadosFiltrados.map(r => r.tipoProblema))];
+      const qtdPorTipo = tipos.map(t =>
+        dadosFiltrados.filter(r => r.tipoProblema === t).length
+      );
+
+      // dados por status
+      const statuses = [...new Set(dadosFiltrados.map(r => r.status))];
+      const qtdPorStatus = statuses.map(s =>
+        dadosFiltrados.filter(r => r.status === s).length
+      );
+
+      // atualizar / criar gráfico de tipo
+      const ctxTipo = document.getElementById("chart-tipo");
+      if (!chartTipo) {
+        chartTipo = new Chart(ctxTipo, {
+          type: "bar",
+          data: {
+            labels: tipos,
+            datasets: [
+              {
+                label: "Quantidade",
+                data: qtdPorTipo,
+                backgroundColor: "#93c5fd"
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+              }
+            }
+          }
+        });
+      } else {
+        chartTipo.data.labels = tipos;
+        chartTipo.data.datasets[0].data = qtdPorTipo;
+        chartTipo.update();
+      }
+
+      // atualizar / criar gráfico de status
+      const ctxStatus = document.getElementById("chart-status");
+      const coresStatus = ["#3b82f6", "#ec4899", "#f97316", "#22c55e"];
+      if (!chartStatus) {
+        chartStatus = new Chart(ctxStatus, {
+          type: "doughnut",
+          data: {
+            labels: statuses,
+            datasets: [
+              {
+                data: qtdPorStatus,
+                backgroundColor: coresStatus.slice(0, statuses.length)
+              }
+            ]
+          },
+          options: { responsive: true }
+        });
+      } else {
+        chartStatus.data.labels = statuses;
+        chartStatus.data.datasets[0].data = qtdPorStatus;
+        chartStatus.update();
+      }
+    }
+
+    // ===== 4. Filtro por status =====
+    filtroBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filtroBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const status = btn.getAttribute("data-status");
+
+        if (status === "todas") {
+          dadosFiltrados = [...dadosOriginais];
+          elSubtitle.textContent = "Visão geral de todas as reclamações";
+        } else {
+          dadosFiltrados = dadosOriginais.filter(r => r.status === status);
+          elSubtitle.textContent = `Filtrando por status: ${status}`;
+        }
+
+        atualizarDashboard();
+      });
+    });
+
+    // ===== 5. Tema claro/escuro =====
+    const toggleThemeBtn = document.getElementById("toggle-theme");
+    toggleThemeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    });
+
+    // ===== 6. Inicialização =====
+    atualizarDashboard();
+  </script>
+</body>
+</html>
