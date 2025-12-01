@@ -8,9 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     :root {
       --bg-main: #f3f4f6;
       --bg-card: #ffffff;
@@ -81,9 +79,7 @@
       gap: 6px;
       transition: 0.15s ease;
     }
-    .btn span.icon {
-      font-size: 14px;
-    }
+    .btn span.icon { font-size: 14px; }
     .btn:hover {
       background: var(--accent-soft);
       border-color: var(--accent);
@@ -206,9 +202,7 @@
       border-radius: 12px;
       overflow: hidden;
     }
-    thead {
-      background: #e0f2fe;
-    }
+    thead { background: #e0f2fe; }
     th, td {
       padding: 6px 8px;
       border-bottom: 1px solid var(--border-soft);
@@ -231,6 +225,104 @@
       border: 1px solid var(--border-soft);
       background: rgba(148, 163, 184, 0.06);
       color: var(--text-muted);
+    }
+
+    /* Área de pesquisa e histórico */
+    .search-row {
+      display: grid;
+      grid-template-columns: 1.4fr 2fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 900px) {
+      .search-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    .search-input-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-input-group input {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 12px;
+      min-width: 120px;
+      outline: none;
+    }
+    .search-details {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .history-list {
+      max-height: 220px;
+      overflow-y: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      padding: 8px;
+      background: rgba(148, 163, 184, 0.04);
+      font-size: 12px;
+    }
+    .history-item {
+      border-bottom: 1px dashed var(--border-soft);
+      padding: 6px 2px;
+    }
+    .history-item:last-child {
+      border-bottom: none;
+    }
+    .history-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .history-text {
+      margin-bottom: 4px;
+    }
+    .history-image {
+      max-width: 100px;
+      max-height: 70px;
+      border-radius: 6px;
+      border: 1px solid var(--border-soft);
+      display: block;
+      margin-top: 4px;
+    }
+    .history-empty {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .history-form {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+      align-items: flex-start;
+    }
+    @media (max-width: 800px) {
+      .history-form { grid-template-columns: 1fr; }
+    }
+    .history-form textarea {
+      width: 100%;
+      min-height: 70px;
+      resize: vertical;
+      font-size: 12px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      outline: none;
+    }
+    .history-form input[type="file"] {
+      font-size: 11px;
+    }
+    .history-form .btn {
+      margin-top: 6px;
+      font-size: 11px;
+      padding: 5px 10px;
     }
 
     @media (max-width: 900px) {
@@ -327,6 +419,63 @@
       </div>
     </div>
 
+    <!-- PESQUISA + HISTÓRICO -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Pesquisa por Reclamação & Histórico</h3>
+          <span>Digite o ID da reclamação para ver e registrar o histórico</span>
+        </div>
+      </div>
+
+      <div class="search-row">
+        <!-- Coluna de pesquisa e dados básicos -->
+        <div>
+          <div class="search-input-group">
+            <input type="number" id="search-id" placeholder="ID da Reclamação">
+            <button class="btn" id="btn-search">
+              <span class="icon">🔍</span> Buscar
+            </button>
+            <span id="search-status" class="search-details"></span>
+          </div>
+          <div id="selected-info" class="search-details"></div>
+        </div>
+
+        <!-- Coluna de histórico -->
+        <div>
+          <strong style="font-size: 13px;">Histórico da Reclamação</strong>
+          <div id="history-container" class="history-list">
+            <div class="history-empty">
+              Nenhuma reclamação selecionada. Pesquise um ID para ver o histórico.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulário para registrar novo histórico -->
+      <div id="history-form-wrapper" style="margin-top:10px; display:none;">
+        <strong style="font-size: 13px;">Registrar novo histórico</strong>
+        <div class="history-form">
+          <div>
+            <textarea id="history-text" placeholder="Descreva o que foi feito nesta etapa..."></textarea>
+          </div>
+          <div>
+            <small style="display:block;margin-bottom:4px;color:var(--text-muted);">
+              Evidência (opcional): selecione uma foto/print
+            </small>
+            <input type="file" id="history-image" accept="image/*">
+            <button class="btn" id="btn-save-history">
+              <span class="icon">💾</span> Salvar histórico
+            </button>
+            <small style="display:block;margin-top:4px;color:var(--text-muted);font-size:10px;">
+              Obs.: os históricos ficam salvos neste navegador (localStorage). Em outro computador,
+              será necessário registrar novamente.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- GRÁFICOS -->
     <div class="charts-grid">
       <div class="panel">
@@ -377,75 +526,56 @@
   <script>
     // ===== 1. Dados base (igual sua planilha) =====
     const dadosOriginais = [
-      {
-        id: 1,
-        cliente: "João Silva",
-        data: "2025-01-05",
-        tipoProblema: "Atraso na entrega",
-        descricao: "Produto chegou 3 dias após o prazo",
-        status: "Pendente"
-      },
-      {
-        id: 2,
-        cliente: "Maria Oliveira",
-        data: "2025-01-06",
-        tipoProblema: "Produto danificado",
-        descricao: "Item chegou com arranhões",
-        status: "Em análise"
-      },
-      {
-        id: 3,
-        cliente: "Carlos Santos",
-        data: "2025-01-07",
-        tipoProblema: "Cobrança indevida",
-        descricao: "Cobrança adicional no cartão",
-        status: "Resolvido"
-      },
-      {
-        id: 4,
-        cliente: "Ana Souza",
-        data: "2025-01-08",
-        tipoProblema: "Atendimento ruim",
-        descricao: "Mal atendimento via telefone",
-        status: "Pendente"
-      },
-      {
-        id: 5,
-        cliente: "Lucas Pereira",
-        data: "2025-01-09",
-        tipoProblema: "Erro no pedido",
-        descricao: "Pedido veio diferente do que foi solicitado",
-        status: "Em análise"
-      }
+      { id: 1, cliente: "João Silva",  data: "2025-01-05", tipoProblema: "Atraso na entrega",
+        descricao: "Produto chegou 3 dias após o prazo", status: "Pendente" },
+      { id: 2, cliente: "Maria Oliveira", data: "2025-01-06", tipoProblema: "Produto danificado",
+        descricao: "Item chegou com arranhões", status: "Em análise" },
+      { id: 3, cliente: "Carlos Santos", data: "2025-01-07", tipoProblema: "Cobrança indevida",
+        descricao: "Cobrança adicional no cartão", status: "Resolvido" },
+      { id: 4, cliente: "Ana Souza",     data: "2025-01-08", tipoProblema: "Atendimento ruim",
+        descricao: "Mal atendimento via telefone", status: "Pendente" },
+      { id: 5, cliente: "Lucas Pereira", data: "2025-01-09", tipoProblema: "Erro no pedido",
+        descricao: "Pedido veio diferente do que foi solicitado", status: "Em análise" }
     ];
 
     let dadosFiltrados = [...dadosOriginais];
 
     // ===== 2. Referências de elementos =====
-    const elTotal = document.getElementById("card-total");
-    const elResolvidas = document.getElementById("card-resolvidas");
-    const elPendentes = document.getElementById("card-pendentes");
-    const elPercentual = document.getElementById("card-percentual");
-    const elTbody = document.getElementById("tbody-reclamacoes");
-    const elSubtitle = document.getElementById("subtitle-filter");
+    const elTotal       = document.getElementById("card-total");
+    const elResolvidas  = document.getElementById("card-resolvidas");
+    const elPendentes   = document.getElementById("card-pendentes");
+    const elPercentual  = document.getElementById("card-percentual");
+    const elTbody       = document.getElementById("tbody-reclamacoes");
+    const elSubtitle    = document.getElementById("subtitle-filter");
 
-    const filtroBtns = document.querySelectorAll(".filter-btn");
+    const filtroBtns    = document.querySelectorAll(".filter-btn");
 
-    // ===== 3. Função para atualizar indicadores, gráficos e tabela =====
+    // Pesquisa / histórico
+    const inputSearch   = document.getElementById("search-id");
+    const btnSearch     = document.getElementById("btn-search");
+    const searchStatus  = document.getElementById("search-status");
+    const selectedInfo  = document.getElementById("selected-info");
+    const historyContainer     = document.getElementById("history-container");
+    const historyFormWrapper   = document.getElementById("history-form-wrapper");
+    const historyText   = document.getElementById("history-text");
+    const historyImage  = document.getElementById("history-image");
+    const btnSaveHistory= document.getElementById("btn-save-history");
+
+    // ===== 3. Dashboard (cards, gráficos, tabela) =====
     let chartTipo, chartStatus;
 
     function atualizarDashboard() {
       const total = dadosFiltrados.length;
       const resolvidas = dadosFiltrados.filter(r => r.status === "Resolvido").length;
-      const pendentes = dadosFiltrados.filter(r => r.status === "Pendente").length;
+      const pendentes  = dadosFiltrados.filter(r => r.status === "Pendente").length;
       const percentualResolvidas = total > 0 ? (resolvidas / total) * 100 : 0;
 
-      elTotal.textContent = total;
+      elTotal.textContent      = total;
       elResolvidas.textContent = resolvidas;
-      elPendentes.textContent = pendentes;
+      elPendentes.textContent  = pendentes;
       elPercentual.textContent = percentualResolvidas.toFixed(0) + "%";
 
-      // preencher tabela
+      // tabela
       elTbody.innerHTML = "";
       dadosFiltrados.forEach(r => {
         const tr = document.createElement("tr");
@@ -472,7 +602,7 @@
         dadosFiltrados.filter(r => r.status === s).length
       );
 
-      // atualizar / criar gráfico de tipo
+      // gráfico tipo
       const ctxTipo = document.getElementById("chart-tipo");
       if (!chartTipo) {
         chartTipo = new Chart(ctxTipo, {
@@ -490,10 +620,7 @@
           options: {
             responsive: true,
             scales: {
-              y: {
-                beginAtZero: true,
-                ticks: { stepSize: 1 }
-              }
+              y: { beginAtZero: true, ticks: { stepSize: 1 } }
             }
           }
         });
@@ -503,7 +630,7 @@
         chartTipo.update();
       }
 
-      // atualizar / criar gráfico de status
+      // gráfico status
       const ctxStatus = document.getElementById("chart-status");
       const coresStatus = ["#3b82f6", "#ec4899", "#f97316", "#22c55e"];
       if (!chartStatus) {
@@ -547,13 +674,163 @@
       });
     });
 
-    // ===== 5. Tema claro/escuro =====
+    // ===== 5. Histórico – armazenamento local =====
+    const LS_KEY = "historicoReclamacoes"; // localStorage
+
+    function carregarHistoricoCompleto() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (!raw) return {};
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error("Erro ao ler histórico:", e);
+        return {};
+      }
+    }
+
+    function salvarHistoricoCompleto(obj) {
+      localStorage.setItem(LS_KEY, JSON.stringify(obj));
+    }
+
+    function obterHistorico(id) {
+      const all = carregarHistoricoCompleto();
+      return all[id] || [];
+    }
+
+    function salvarEntradaHistorico(id, entrada) {
+      const all = carregarHistoricoCompleto();
+      if (!all[id]) all[id] = [];
+      all[id].push(entrada);
+      salvarHistoricoCompleto(all);
+    }
+
+    function renderizarHistorico(id) {
+      const historico = obterHistorico(id);
+      historyContainer.innerHTML = "";
+
+      if (!historico.length) {
+        historyContainer.innerHTML = `
+          <div class="history-empty">
+            Nenhum histórico registrado para essa reclamação ainda.
+          </div>
+        `;
+        return;
+      }
+
+      historico.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <div class="history-meta">
+            ${new Date(item.dataHora).toLocaleString("pt-BR")} · ${item.usuario || "Usuário local"}
+          </div>
+          <div class="history-text">${item.texto}</div>
+        `;
+        if (item.imagemDataUrl) {
+          const img = document.createElement("img");
+          img.src = item.imagemDataUrl;
+          img.className = "history-image";
+          img.alt = "Evidência";
+          div.appendChild(img);
+        }
+        historyContainer.appendChild(div);
+      });
+    }
+
+    // ===== 6. Pesquisa por ID =====
+    let idSelecionado = null;
+
+    function buscarPorId() {
+      const id = parseInt(inputSearch.value, 10);
+      if (!id) {
+        searchStatus.textContent = "Informe um ID válido.";
+        selectedInfo.textContent = "";
+        historyContainer.innerHTML = `
+          <div class="history-empty">
+            Nenhuma reclamação selecionada. Pesquise um ID para ver o histórico.
+          </div>`;
+        historyFormWrapper.style.display = "none";
+        idSelecionado = null;
+        return;
+      }
+
+      const rec = dadosOriginais.find(r => r.id === id);
+      if (!rec) {
+        searchStatus.textContent = `Reclamação ID ${id} não encontrada na base.`;
+        selectedInfo.textContent = "";
+        historyContainer.innerHTML = `
+          <div class="history-empty">
+            Esse ID não existe na base atual.
+          </div>`;
+        historyFormWrapper.style.display = "none";
+        idSelecionado = null;
+        return;
+      }
+
+      searchStatus.textContent = "";
+      idSelecionado = id;
+      selectedInfo.innerHTML = `
+        <strong>Selecionado:</strong> ID ${rec.id} · ${rec.cliente} · 
+        ${new Date(rec.data).toLocaleDateString("pt-BR")} · ${rec.tipoProblema} · Status: ${rec.status}
+      `;
+
+      renderizarHistorico(idSelecionado);
+      historyFormWrapper.style.display = "block";
+    }
+
+    btnSearch.addEventListener("click", buscarPorId);
+    inputSearch.addEventListener("keyup", e => {
+      if (e.key === "Enter") buscarPorId();
+    });
+
+    // ===== 7. Salvar novo histórico =====
+    btnSaveHistory.addEventListener("click", () => {
+      if (!idSelecionado) {
+        alert("Primeiro pesquise e selecione uma reclamação pelo ID.");
+        return;
+      }
+      const texto = historyText.value.trim();
+      if (!texto) {
+        alert("Digite uma descrição para o histórico.");
+        return;
+      }
+
+      const entradaBase = {
+        dataHora: new Date().toISOString(),
+        texto,
+        usuario: "Usuário local",
+        imagemDataUrl: null
+      };
+
+      const file = historyImage.files[0];
+      if (!file) {
+        // sem imagem
+        salvarEntradaHistorico(idSelecionado, entradaBase);
+        historyText.value = "";
+        historyImage.value = "";
+        renderizarHistorico(idSelecionado);
+        return;
+      }
+
+      // com imagem: ler como base64 (DataURL)
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        entradaBase.imagemDataUrl = ev.target.result;
+        salvarEntradaHistorico(idSelecionado, entradaBase);
+        historyText.value = "";
+        historyImage.value = "";
+        renderizarHistorico(idSelecionado);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ===== 8. Tema claro/escuro =====
     const toggleThemeBtn = document.getElementById("toggle-theme");
     toggleThemeBtn.addEventListener("click", () => {
       document.body.classList.toggle("dark");
     });
 
-    // ===== 6. Inicialização =====
+    // ===== 9. Inicialização =====
     atualizarDashboard();
   </script>
 </body>
