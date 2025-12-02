@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard de Reclamações</title>
+  <title>Dashboard de Reclamações (Base RO)</title>
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -250,7 +250,7 @@
       border-radius: 999px;
       border: 1px solid var(--border-soft);
       font-size: 12px;
-      min-width: 120px;
+      min-width: 160px;
       outline: none;
     }
     .search-details {
@@ -351,15 +351,15 @@
   <div class="shell">
     <div class="top-bar">
       <div class="title-block">
-        <h1>Dashboard de Reclamações</h1>
-        <span id="subtitle-filter">Visão geral de todas as reclamações</span>
+        <h1>Dashboard RO – Reclamações</h1>
+        <span id="subtitle-filter">Carregando dados da planilha (dados.csv)...</span>
       </div>
       <div class="top-actions">
         <button class="btn btn-toggle" id="toggle-theme">
           <span class="icon">🌗</span> Tema claro/escuro
         </button>
         <span class="badge">
-          <span>🧪</span> Demo com dados fictícios
+          <span>📁</span> Base Excel convertida em CSV
         </span>
       </div>
     </div>
@@ -368,38 +368,38 @@
     <div class="cards">
       <div class="card">
         <div class="card-header">
-          <span class="card-label">Total de Reclamações</span>
+          <span class="card-label">Total de ROs</span>
           <div class="card-icon">📊</div>
         </div>
         <div class="card-value" id="card-total"></div>
-        <div class="card-sub">Quantidade no período filtrado</div>
+        <div class="card-sub">Quantidade de ROs na base filtrada</div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <span class="card-label">Reclamações Resolvidas</span>
+          <span class="card-label">Toneladas reclamadas</span>
+          <div class="card-icon">⚖️</div>
+        </div>
+        <div class="card-value" id="card-ton"></div>
+        <div class="card-sub">Soma de Reclamado Ton</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Área reclamada (m²)</span>
+          <div class="card-icon">📐</div>
+        </div>
+        <div class="card-value" id="card-m2"></div>
+        <div class="card-sub">Soma de Reclamado m²</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">% com FP realizado</span>
           <div class="card-icon">✅</div>
         </div>
-        <div class="card-value" id="card-resolvidas"></div>
-        <div class="card-sub">Finalizadas com solução</div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-label">Reclamações Pendentes</span>
-          <div class="card-icon">⏳</div>
-        </div>
-        <div class="card-value" id="card-pendentes"></div>
-        <div class="card-sub">Ainda aguardando tratativa</div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-label">% Resolvidas</span>
-          <div class="card-icon">📈</div>
-        </div>
-        <div class="card-value" id="card-percentual"></div>
-        <div class="card-sub">Taxa de resolução sobre o total</div>
+        <div class="card-value" id="card-percent-fp"></div>
+        <div class="card-sub">ROs com Qtd de FP > 0</div>
       </div>
     </div>
 
@@ -407,14 +407,13 @@
     <div class="panel">
       <div class="panel-header">
         <div>
-          <h3>Filtros rápidos</h3>
-          <span>Use para analisar apenas um status específico</span>
+          <h3>Filtros rápidos de status</h3>
+          <span>Baseado na coluna "Situação atual do RO" (coluna K)</span>
         </div>
         <div class="filters">
           <button class="filter-btn active" data-status="todas">Todas</button>
-          <button class="filter-btn" data-status="Pendente">Pendentes</button>
-          <button class="filter-btn" data-status="Em análise">Em análise</button>
-          <button class="filter-btn" data-status="Resolvido">Resolvidas</button>
+          <button class="filter-btn" data-status="Status não informado">Sem situação</button>
+          <!-- Os outros status virão do gráfico (coluna Situação atual do RO) -->
         </div>
       </div>
     </div>
@@ -423,8 +422,8 @@
     <div class="panel">
       <div class="panel-header">
         <div>
-          <h3>Pesquisa por Reclamação & Histórico</h3>
-          <span>Digite o ID da reclamação para ver e registrar o histórico</span>
+          <h3>Pesquisa por Número RO & Histórico</h3>
+          <span>Use o número da Reclamação (ex.: 02651-2024)</span>
         </div>
       </div>
 
@@ -432,7 +431,7 @@
         <!-- Coluna de pesquisa e dados básicos -->
         <div>
           <div class="search-input-group">
-            <input type="number" id="search-id" placeholder="ID da Reclamação">
+            <input type="text" id="search-id" placeholder="Número RO (ex.: 02651-2024)">
             <button class="btn" id="btn-search">
               <span class="icon">🔍</span> Buscar
             </button>
@@ -446,7 +445,7 @@
           <strong style="font-size: 13px;">Histórico da Reclamação</strong>
           <div id="history-container" class="history-list">
             <div class="history-empty">
-              Nenhuma reclamação selecionada. Pesquise um ID para ver o histórico.
+              Nenhuma reclamação selecionada. Pesquise um Número RO para ver o histórico.
             </div>
           </div>
         </div>
@@ -454,7 +453,7 @@
 
       <!-- Formulário para registrar novo histórico -->
       <div id="history-form-wrapper" style="margin-top:10px; display:none;">
-        <strong style="font-size: 13px;">Registrar novo histórico</strong>
+        <strong style="font-size: 13px;">Registrar novo histórico (não grava na planilha, apenas neste navegador)</strong>
         <div class="history-form">
           <div>
             <textarea id="history-text" placeholder="Descreva o que foi feito nesta etapa..."></textarea>
@@ -468,8 +467,7 @@
               <span class="icon">💾</span> Salvar histórico
             </button>
             <small style="display:block;margin-top:4px;color:var(--text-muted);font-size:10px;">
-              Obs.: os históricos ficam salvos neste navegador (localStorage). Em outro computador,
-              será necessário registrar novamente.
+              Obs.: o histórico fica salvo apenas neste navegador (localStorage).
             </small>
           </div>
         </div>
@@ -481,17 +479,17 @@
       <div class="panel">
         <div class="panel-header">
           <div>
-            <h3>Reclamações por Tipo de Problema</h3>
-            <span>Distribuição dos problemas mais recorrentes</span>
+            <h3>ROs por Motivo</h3>
+            <span>Baseado na coluna "Motivo"</span>
           </div>
         </div>
-        <canvas id="chart-tipo"></canvas>
+        <canvas id="chart-motivo"></canvas>
       </div>
 
       <div class="panel">
         <div class="panel-header">
           <div>
-            <h3>Reclamações por Status</h3>
+            <h3>ROs por Situação atual</h3>
             <span>Clique em um status para filtrar o detalhamento</span>
           </div>
         </div>
@@ -504,18 +502,25 @@
       <div class="panel-header">
         <div>
           <h3>Detalhamento das Reclamações</h3>
-          <span>Lista completa filtrada pelas opções acima ou pelo gráfico</span>
+          <span>Dados vindos da sua planilha (dados.csv)</span>
         </div>
       </div>
       <table>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Nº RO</th>
             <th>Cliente</th>
-            <th>Data</th>
-            <th>Tipo de Problema</th>
-            <th>Status</th>
-            <th>Descrição</th>
+            <th>Data Abertura</th>
+            <th>Motivo</th>
+            <th>Situação atual RO</th>
+            <th>Qtd FP</th>
+            <th>Último FP</th>
+            <th>Dias Últ. Status</th>
+            <th>Ton</th>
+            <th>m²</th>
+            <th>Coment. Qualidade</th>
+            <th>Coment. Pós-vendas</th>
+            <th>Link</th>
           </tr>
         </thead>
         <tbody id="tbody-reclamacoes"></tbody>
@@ -524,35 +529,20 @@
   </div>
 
   <script>
-    // ===== 1. Dados base (igual sua planilha) =====
-    const dadosOriginais = [
-      { id: 1, cliente: "João Silva",  data: "2025-01-05", tipoProblema: "Atraso na entrega",
-        descricao: "Produto chegou 3 dias após o prazo", status: "Pendente" },
-      { id: 2, cliente: "Maria Oliveira", data: "2025-01-06", tipoProblema: "Produto danificado",
-        descricao: "Item chegou com arranhões", status: "Em análise" },
-      { id: 3, cliente: "Carlos Santos", data: "2025-01-07", tipoProblema: "Cobrança indevida",
-        descricao: "Cobrança adicional no cartão", status: "Resolvido" },
-      { id: 4, cliente: "Ana Souza",     data: "2025-01-08", tipoProblema: "Atendimento ruim",
-        descricao: "Mal atendimento via telefone", status: "Pendente" },
-      { id: 5, cliente: "Lucas Pereira", data: "2025-01-09", tipoProblema: "Erro no pedido",
-        descricao: "Pedido veio diferente do que foi solicitado", status: "Em análise" }
-    ];
+    let dadosOriginais = [];
+    let dadosFiltrados = [];
+    let filtroAtual = "todas";
+    let chartMotivo, chartStatus;
+    let currentStatuses = [];
 
-    let dadosFiltrados = [...dadosOriginais];
-    let filtroAtual = "todas";       // "todas", "Pendente", "Em análise", "Resolvido"
-    let chartTipo, chartStatus;
-    let currentStatuses = [];        // labels atuais do gráfico de status
-
-    // ===== 2. Referências de elementos =====
-    const elTotal       = document.getElementById("card-total");
-    const elResolvidas  = document.getElementById("card-resolvidas");
-    const elPendentes   = document.getElementById("card-pendentes");
-    const elPercentual  = document.getElementById("card-percentual");
-    const elTbody       = document.getElementById("tbody-reclamacoes");
     const elSubtitle    = document.getElementById("subtitle-filter");
+    const elTotal       = document.getElementById("card-total");
+    const elTon         = document.getElementById("card-ton");
+    const elM2          = document.getElementById("card-m2");
+    const elPercentFP   = document.getElementById("card-percent-fp");
+    const elTbody       = document.getElementById("tbody-reclamacoes");
     const filtroBtns    = document.querySelectorAll(".filter-btn");
 
-    // Pesquisa / histórico
     const inputSearch   = document.getElementById("search-id");
     const btnSearch     = document.getElementById("btn-search");
     const searchStatus  = document.getElementById("search-status");
@@ -563,11 +553,91 @@
     const historyImage  = document.getElementById("history-image");
     const btnSaveHistory= document.getElementById("btn-save-history");
 
-    // ===== 3. Função de filtro genérica (usada por botões e gráfico) =====
+    // ====== CARREGAR CSV (dados.csv) ======
+    function carregarCSV() {
+      fetch("dados.csv")
+        .then(resp => {
+          if (!resp.ok) throw new Error("Não foi possível localizar dados.csv");
+          return resp.text();
+        })
+        .then(csvText => {
+          const linhas = csvText.split(/\r?\n/).filter(l => l.trim() !== "");
+          if (linhas.length < 2) throw new Error("CSV sem dados.");
+
+          // Detecta delimitador ; ou ,
+          const primeiraLinha = linhas[0];
+          const delimitador = primeiraLinha.includes(";") ? ";" : ",";
+
+          const headers = primeiraLinha.split(delimitador).map(h => h.trim());
+          function idx(nome) {
+            return headers.indexOf(nome);
+          }
+
+          const idxCliente   = idx("Cliente");
+          const idxNumRO     = idx("Número RO");
+          const idxDataAbert = idx("Data Abertura RO");
+          const idxUltSts    = idx("Ult Sts");
+          const idxInfoCl    = idx("Informação Solicitada ao Cliente");
+          const idxDiasSt    = idx("Dias Útimo Status");
+          const idxMotivo    = idx("Motivo");
+          const idxTon       = idx("Reclamado Ton");
+          const idxM2        = idx("Reclamado M2");
+          const idxComQual   = idx("Comentários da Qualidade");
+          const idxSitRO     = idx("Situação atual do RO");
+          const idxQtdFP     = idx("Qtd de FP realizado");
+          const idxUltFP     = idx("Último FP realizado");
+          const idxComPos    = idx("Comentários do Pós vendas");
+          const idxLink      = idx("Link");
+
+          dadosOriginais = linhas.slice(1).map(linha => {
+            const cols = linha.split(delimitador);
+            function val(i) {
+              if (i === -1 || i >= cols.length) return "";
+              return cols[i].trim();
+            }
+            function num(i) {
+              const v = val(i).replace(".", "").replace(",", ".");
+              const n = parseFloat(v);
+              return isNaN(n) ? null : n;
+            }
+
+            const situacao = val(idxSitRO) || "Status não informado";
+            const qtdFP = num(idxQtdFP);
+
+            return {
+              cliente: val(idxCliente),
+              numeroRO: val(idxNumRO),
+              dataAbertura: val(idxDataAbert),
+              ultSts: val(idxUltSts),
+              infoSolicitada: val(idxInfoCl),
+              diasUltimoStatus: val(idxDiasSt),
+              motivo: val(idxMotivo),
+              reclamadoTon: num(idxTon),
+              reclamadoM2: num(idxM2),
+              comentariosQualidade: val(idxComQual),
+              situacaoRO: situacao,
+              qtdFP: qtdFP,
+              ultimoFP: val(idxUltFP),
+              comentariosPosVendas: val(idxComPos),
+              link: val(idxLink),
+              status: situacao  // campo usado para filtros / gráficos
+            };
+          }).filter(r => r.numeroRO); // ignora linhas vazias
+
+          dadosFiltrados = [...dadosOriginais];
+          elSubtitle.textContent = "Visão geral de todas as reclamações (base: dados.csv)";
+          atualizarDashboard();
+        })
+        .catch(err => {
+          console.error(err);
+          elSubtitle.textContent = "Erro ao carregar dados.csv: " + err.message;
+        });
+    }
+
+    // ====== FILTRO POR STATUS (botão ou gráfico) ======
     function aplicarFiltroStatus(status) {
       filtroAtual = status;
 
-      // Atualiza botões
       filtroBtns.forEach(b => {
         const s = b.getAttribute("data-status");
         b.classList.toggle("active", s === status);
@@ -576,7 +646,7 @@
 
       if (status === "todas") {
         dadosFiltrados = [...dadosOriginais];
-        elSubtitle.textContent = "Visão geral de todas as reclamações";
+        elSubtitle.textContent = "Visão geral de todas as reclamações (base: dados.csv)";
       } else {
         dadosFiltrados = dadosOriginais.filter(r => r.status === status);
         elSubtitle.textContent = `Filtrando por status: ${status}`;
@@ -585,56 +655,57 @@
       atualizarDashboard();
     }
 
-    // ===== 4. Dashboard (cards, gráficos, tabela) =====
+    // ====== DASHBOARD (cards, gráficos, tabela) ======
     function atualizarDashboard() {
       const total = dadosFiltrados.length;
-      const resolvidas = dadosFiltrados.filter(r => r.status === "Resolvido").length;
-      const pendentes  = dadosFiltrados.filter(r => r.status === "Pendente").length;
-      const percentualResolvidas = total > 0 ? (resolvidas / total) * 100 : 0;
+      const somaTon = dadosFiltrados.reduce((acc, r) => acc + (r.reclamadoTon || 0), 0);
+      const somaM2  = dadosFiltrados.reduce((acc, r) => acc + (r.reclamadoM2  || 0), 0);
+      const comFP   = dadosFiltrados.filter(r => (r.qtdFP || 0) > 0).length;
+      const percFP  = total > 0 ? (comFP / total) * 100 : 0;
 
-      elTotal.textContent      = total;
-      elResolvidas.textContent = resolvidas;
-      elPendentes.textContent  = pendentes;
-      elPercentual.textContent = percentualResolvidas.toFixed(0) + "%";
+      elTotal.textContent = total;
+      elTon.textContent   = somaTon.toLocaleString("pt-BR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+      elM2.textContent    = somaM2.toLocaleString("pt-BR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+      elPercentFP.textContent = percFP.toFixed(0) + "%";
 
       // tabela
       elTbody.innerHTML = "";
       dadosFiltrados.forEach(r => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${r.id}</td>
-          <td>${r.cliente}</td>
-          <td>${new Date(r.data).toLocaleDateString("pt-BR")}</td>
-          <td>${r.tipoProblema}</td>
-          <td>${r.status}</td>
-          <td>${r.descricao}</td>
+          <td>${r.numeroRO || ""}</td>
+          <td>${r.cliente || ""}</td>
+          <td>${r.dataAbertura || ""}</td>
+          <td>${r.motivo || ""}</td>
+          <td>${r.situacaoRO || ""}</td>
+          <td>${r.qtdFP != null ? r.qtdFP : ""}</td>
+          <td>${r.ultimoFP || ""}</td>
+          <td>${r.diasUltimoStatus || ""}</td>
+          <td>${r.reclamadoTon != null ? r.reclamadoTon.toLocaleString("pt-BR", {maximumFractionDigits: 2}) : ""}</td>
+          <td>${r.reclamadoM2  != null ? r.reclamadoM2.toLocaleString("pt-BR",  {maximumFractionDigits: 2}) : ""}</td>
+          <td>${r.comentariosQualidade || ""}</td>
+          <td>${r.comentariosPosVendas || ""}</td>
+          <td>${r.link || ""}</td>
         `;
         elTbody.appendChild(tr);
       });
 
-      // dados por tipo
-      const tipos = [...new Set(dadosFiltrados.map(r => r.tipoProblema))];
-      const qtdPorTipo = tipos.map(t =>
-        dadosFiltrados.filter(r => r.tipoProblema === t).length
+      // gráfico Motivo
+      const motivos = [...new Set(dadosFiltrados.map(r => r.motivo || "Motivo não informado"))];
+      const qtdPorMotivo = motivos.map(m =>
+        dadosFiltrados.filter(r => (r.motivo || "Motivo não informado") === m).length
       );
 
-      // dados por status (para o gráfico)
-      currentStatuses = [...new Set(dadosFiltrados.map(r => r.status))];
-      const qtdPorStatus = currentStatuses.map(s =>
-        dadosFiltrados.filter(r => r.status === s).length
-      );
-
-      // gráfico tipo
-      const ctxTipo = document.getElementById("chart-tipo");
-      if (!chartTipo) {
-        chartTipo = new Chart(ctxTipo, {
+      const ctxMotivo = document.getElementById("chart-motivo");
+      if (!chartMotivo) {
+        chartMotivo = new Chart(ctxMotivo, {
           type: "bar",
           data: {
-            labels: tipos,
+            labels: motivos,
             datasets: [
               {
-                label: "Quantidade",
-                data: qtdPorTipo,
+                label: "Qtd de ROs",
+                data: qtdPorMotivo,
                 backgroundColor: "#93c5fd"
               }
             ]
@@ -647,14 +718,19 @@
           }
         });
       } else {
-        chartTipo.data.labels = tipos;
-        chartTipo.data.datasets[0].data = qtdPorTipo;
-        chartTipo.update();
+        chartMotivo.data.labels = motivos;
+        chartMotivo.data.datasets[0].data = qtdPorMotivo;
+        chartMotivo.update();
       }
 
-      // gráfico status
+      // gráfico Status
+      currentStatuses = [...new Set(dadosFiltrados.map(r => r.status || "Status não informado"))];
+      const qtdPorStatus = currentStatuses.map(s =>
+        dadosFiltrados.filter(r => (r.status || "Status não informado") === s).length
+      );
+
       const ctxStatus = document.getElementById("chart-status");
-      const coresStatus = ["#3b82f6", "#ec4899", "#f97316", "#22c55e"];
+      const coresStatus = ["#3b82f6", "#ec4899", "#f97316", "#22c55e", "#a855f7", "#facc15"];
 
       const chartStatusConfig = {
         type: "doughnut",
@@ -674,7 +750,6 @@
             const index = elements[0].index;
             const statusClicado = currentStatuses[index];
 
-            // Se já estiver filtrando por esse status, voltar para "todas"
             if (filtroAtual === statusClicado) {
               aplicarFiltroStatus("todas");
             } else {
@@ -694,7 +769,7 @@
       }
     }
 
-    // ===== 5. Filtro por status (botões) =====
+    // ====== BOTÕES DE FILTRO RÁPIDO ======
     filtroBtns.forEach(btn => {
       btn.addEventListener("click", () => {
         const status = btn.getAttribute("data-status");
@@ -702,8 +777,8 @@
       });
     });
 
-    // ===== 6. Histórico – armazenamento local =====
-    const LS_KEY = "historicoReclamacoes"; // localStorage
+    // ====== HISTÓRICO – localStorage ======
+    const LS_KEY = "historicoReclamacoesRO";
 
     function carregarHistoricoCompleto() {
       try {
@@ -720,26 +795,26 @@
       localStorage.setItem(LS_KEY, JSON.stringify(obj));
     }
 
-    function obterHistorico(id) {
+    function obterHistorico(numeroRO) {
       const all = carregarHistoricoCompleto();
-      return all[id] || [];
+      return all[numeroRO] || [];
     }
 
-    function salvarEntradaHistorico(id, entrada) {
+    function salvarEntradaHistorico(numeroRO, entrada) {
       const all = carregarHistoricoCompleto();
-      if (!all[id]) all[id] = [];
-      all[id].push(entrada);
+      if (!all[numeroRO]) all[numeroRO] = [];
+      all[numeroRO].push(entrada);
       salvarHistoricoCompleto(all);
     }
 
-    function renderizarHistorico(id) {
-      const historico = obterHistorico(id);
+    function renderizarHistorico(numeroRO) {
+      const historico = obterHistorico(numeroRO);
       historyContainer.innerHTML = "";
 
       if (!historico.length) {
         historyContainer.innerHTML = `
           <div class="history-empty">
-            Nenhum histórico registrado para essa reclamação ainda.
+            Nenhum histórico registrado para esse Número RO ainda.
           </div>
         `;
         return;
@@ -765,56 +840,56 @@
       });
     }
 
-    // ===== 7. Pesquisa por ID =====
-    let idSelecionado = null;
+    // ====== PESQUISA POR NÚMERO RO ======
+    let numeroROSelecionado = null;
 
-    function buscarPorId() {
-      const id = parseInt(inputSearch.value, 10);
-      if (!id) {
-        searchStatus.textContent = "Informe um ID válido.";
+    function buscarPorNumeroRO() {
+      const nro = (inputSearch.value || "").trim();
+      if (!nro) {
+        searchStatus.textContent = "Informe um Número RO válido.";
         selectedInfo.textContent = "";
         historyContainer.innerHTML = `
           <div class="history-empty">
-            Nenhuma reclamação selecionada. Pesquise um ID para ver o histórico.
+            Nenhuma reclamação selecionada. Pesquise um Número RO para ver o histórico.
           </div>`;
         historyFormWrapper.style.display = "none";
-        idSelecionado = null;
+        numeroROSelecionado = null;
         return;
       }
 
-      const rec = dadosOriginais.find(r => r.id === id);
+      const rec = dadosOriginais.find(r => (r.numeroRO || "").toLowerCase() === nro.toLowerCase());
       if (!rec) {
-        searchStatus.textContent = `Reclamação ID ${id} não encontrada na base.`;
+        searchStatus.textContent = `Reclamação com Número RO "${nro}" não encontrada na base.`;
         selectedInfo.textContent = "";
         historyContainer.innerHTML = `
           <div class="history-empty">
-            Esse ID não existe na base atual.
+            Esse Número RO não existe na base atual.
           </div>`;
         historyFormWrapper.style.display = "none";
-        idSelecionado = null;
+        numeroROSelecionado = null;
         return;
       }
 
       searchStatus.textContent = "";
-      idSelecionado = id;
+      numeroROSelecionado = rec.numeroRO;
       selectedInfo.innerHTML = `
-        <strong>Selecionado:</strong> ID ${rec.id} · ${rec.cliente} · 
-        ${new Date(rec.data).toLocaleDateString("pt-BR")} · ${rec.tipoProblema} · Status: ${rec.status}
+        <strong>Selecionado:</strong> RO ${rec.numeroRO} · ${rec.cliente} · 
+        ${rec.dataAbertura || ""} · Motivo: ${rec.motivo || ""} · Status: ${rec.situacaoRO || ""}
       `;
 
-      renderizarHistorico(idSelecionado);
+      renderizarHistorico(numeroROSelecionado);
       historyFormWrapper.style.display = "block";
     }
 
-    btnSearch.addEventListener("click", buscarPorId);
+    btnSearch.addEventListener("click", buscarPorNumeroRO);
     inputSearch.addEventListener("keyup", e => {
-      if (e.key === "Enter") buscarPorId();
+      if (e.key === "Enter") buscarPorNumeroRO();
     });
 
-    // ===== 8. Salvar novo histórico =====
+    // ====== SALVAR NOVO HISTÓRICO ======
     btnSaveHistory.addEventListener("click", () => {
-      if (!idSelecionado) {
-        alert("Primeiro pesquise e selecione uma reclamação pelo ID.");
+      if (!numeroROSelecionado) {
+        alert("Primeiro pesquise e selecione uma reclamação pelo Número RO.");
         return;
       }
       const texto = historyText.value.trim();
@@ -832,32 +907,32 @@
 
       const file = historyImage.files[0];
       if (!file) {
-        salvarEntradaHistorico(idSelecionado, entradaBase);
+        salvarEntradaHistorico(numeroROSelecionado, entradaBase);
         historyText.value = "";
         historyImage.value = "";
-        renderizarHistorico(idSelecionado);
+        renderizarHistorico(numeroROSelecionado);
         return;
       }
 
       const reader = new FileReader();
       reader.onload = function(ev) {
         entradaBase.imagemDataUrl = ev.target.result;
-        salvarEntradaHistorico(idSelecionado, entradaBase);
+        salvarEntradaHistorico(numeroROSelecionado, entradaBase);
         historyText.value = "";
         historyImage.value = "";
-        renderizarHistorico(idSelecionado);
+        renderizarHistorico(numeroROSelecionado);
       };
       reader.readAsDataURL(file);
     });
 
-    // ===== 9. Tema claro/escuro =====
+    // ====== TEMA CLARO/ESCURO ======
     const toggleThemeBtn = document.getElementById("toggle-theme");
     toggleThemeBtn.addEventListener("click", () => {
       document.body.classList.toggle("dark");
     });
 
-    // ===== 10. Inicialização =====
-    atualizarDashboard();
+    // ====== INICIALIZAÇÃO ======
+    carregarCSV();
   </script>
 </body>
 </html>
