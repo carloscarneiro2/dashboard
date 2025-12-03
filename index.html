@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard de Reclamações (Base RO)</title>
+  <title>Dashboard RO – Reclamações</title>
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -93,6 +93,18 @@
       background: #f9fafb;
       color: #111827;
       border-color: #f9fafb;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(148, 163, 184, 0.06);
+      color: var(--text-muted);
     }
 
     .cards {
@@ -215,116 +227,6 @@
       background: rgba(148, 163, 184, 0.10);
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: rgba(148, 163, 184, 0.06);
-      color: var(--text-muted);
-    }
-
-    /* Área de pesquisa e histórico */
-    .search-row {
-      display: grid;
-      grid-template-columns: 1.4fr 2fr;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    @media (max-width: 900px) {
-      .search-row {
-        grid-template-columns: 1fr;
-      }
-    }
-    .search-input-group {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .search-input-group input {
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      font-size: 12px;
-      min-width: 160px;
-      outline: none;
-    }
-    .search-details {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-    .history-list {
-      max-height: 220px;
-      overflow-y: auto;
-      border-radius: 10px;
-      border: 1px solid var(--border-soft);
-      padding: 8px;
-      background: rgba(148, 163, 184, 0.04);
-      font-size: 12px;
-    }
-    .history-item {
-      border-bottom: 1px dashed var(--border-soft);
-      padding: 6px 2px;
-    }
-    .history-item:last-child {
-      border-bottom: none;
-    }
-    .history-meta {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 2px;
-    }
-    .history-text {
-      margin-bottom: 4px;
-    }
-    .history-image {
-      max-width: 100px;
-      max-height: 70px;
-      border-radius: 6px;
-      border: 1px solid var(--border-soft);
-      display: block;
-      margin-top: 4px;
-    }
-    .history-empty {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-style: italic;
-    }
-
-    .history-form {
-      display: grid;
-      grid-template-columns: 1.8fr 1fr;
-      gap: 10px;
-      margin-top: 8px;
-      align-items: flex-start;
-    }
-    @media (max-width: 800px) {
-      .history-form { grid-template-columns: 1fr; }
-    }
-    .history-form textarea {
-      width: 100%;
-      min-height: 70px;
-      resize: vertical;
-      font-size: 12px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid var(--border-soft);
-      outline: none;
-    }
-    .history-form input[type="file"] {
-      font-size: 11px;
-    }
-    .history-form .btn {
-      margin-top: 6px;
-      font-size: 11px;
-      padding: 5px 10px;
-    }
-
     @media (max-width: 900px) {
       .cards {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -413,63 +315,6 @@
         <div class="filters">
           <button class="filter-btn active" data-status="todas">Todas</button>
           <button class="filter-btn" data-status="Status não informado">Sem situação</button>
-          <!-- Os outros status virão do gráfico (coluna Situação atual do RO) -->
-        </div>
-      </div>
-    </div>
-
-    <!-- PESQUISA + HISTÓRICO -->
-    <div class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>Pesquisa por Número RO & Histórico</h3>
-          <span>Use o número da Reclamação (ex.: 02651-2024)</span>
-        </div>
-      </div>
-
-      <div class="search-row">
-        <!-- Coluna de pesquisa e dados básicos -->
-        <div>
-          <div class="search-input-group">
-            <input type="text" id="search-id" placeholder="Número RO (ex.: 02651-2024)">
-            <button class="btn" id="btn-search">
-              <span class="icon">🔍</span> Buscar
-            </button>
-            <span id="search-status" class="search-details"></span>
-          </div>
-          <div id="selected-info" class="search-details"></div>
-        </div>
-
-        <!-- Coluna de histórico -->
-        <div>
-          <strong style="font-size: 13px;">Histórico da Reclamação</strong>
-          <div id="history-container" class="history-list">
-            <div class="history-empty">
-              Nenhuma reclamação selecionada. Pesquise um Número RO para ver o histórico.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Formulário para registrar novo histórico -->
-      <div id="history-form-wrapper" style="margin-top:10px; display:none;">
-        <strong style="font-size: 13px;">Registrar novo histórico (não grava na planilha, apenas neste navegador)</strong>
-        <div class="history-form">
-          <div>
-            <textarea id="history-text" placeholder="Descreva o que foi feito nesta etapa..."></textarea>
-          </div>
-          <div>
-            <small style="display:block;margin-bottom:4px;color:var(--text-muted);">
-              Evidência (opcional): selecione uma foto/print
-            </small>
-            <input type="file" id="history-image" accept="image/*">
-            <button class="btn" id="btn-save-history">
-              <span class="icon">💾</span> Salvar histórico
-            </button>
-            <small style="display:block;margin-top:4px;color:var(--text-muted);font-size:10px;">
-              Obs.: o histórico fica salvo apenas neste navegador (localStorage).
-            </small>
-          </div>
         </div>
       </div>
     </div>
@@ -535,23 +380,14 @@
     let chartMotivo, chartStatus;
     let currentStatuses = [];
 
-    const elSubtitle    = document.getElementById("subtitle-filter");
-    const elTotal       = document.getElementById("card-total");
-    const elTon         = document.getElementById("card-ton");
-    const elM2          = document.getElementById("card-m2");
-    const elPercentFP   = document.getElementById("card-percent-fp");
-    const elTbody       = document.getElementById("tbody-reclamacoes");
-    const filtroBtns    = document.querySelectorAll(".filter-btn");
-
-    const inputSearch   = document.getElementById("search-id");
-    const btnSearch     = document.getElementById("btn-search");
-    const searchStatus  = document.getElementById("search-status");
-    const selectedInfo  = document.getElementById("selected-info");
-    const historyContainer     = document.getElementById("history-container");
-    const historyFormWrapper   = document.getElementById("history-form-wrapper");
-    const historyText   = document.getElementById("history-text");
-    const historyImage  = document.getElementById("history-image");
-    const btnSaveHistory= document.getElementById("btn-save-history");
+    const elSubtitle  = document.getElementById("subtitle-filter");
+    const elTotal     = document.getElementById("card-total");
+    const elTon       = document.getElementById("card-ton");
+    const elM2        = document.getElementById("card-m2");
+    const elPercentFP = document.getElementById("card-percent-fp");
+    const elTbody     = document.getElementById("tbody-reclamacoes");
+    const filtroBtns  = document.querySelectorAll(".filter-btn");
+    const toggleThemeBtn = document.getElementById("toggle-theme");
 
     // ====== CARREGAR CSV (dados.csv) ======
     function carregarCSV() {
@@ -620,7 +456,7 @@
               ultimoFP: val(idxUltFP),
               comentariosPosVendas: val(idxComPos),
               link: val(idxLink),
-              status: situacao  // campo usado para filtros / gráficos
+              status: situacao  // usado em filtros/gráficos
             };
           }).filter(r => r.numeroRO); // ignora linhas vazias
 
@@ -634,7 +470,7 @@
         });
     }
 
-    // ====== FILTRO POR STATUS (botão ou gráfico) ======
+    // ====== FILTRO POR STATUS ======
     function aplicarFiltroStatus(status) {
       filtroAtual = status;
 
@@ -656,6 +492,8 @@
     }
 
     // ====== DASHBOARD (cards, gráficos, tabela) ======
+    let chartMotivo, chartStatus, currentStatuses;
+
     function atualizarDashboard() {
       const total = dadosFiltrados.length;
       const somaTon = dadosFiltrados.reduce((acc, r) => acc + (r.reclamadoTon || 0), 0);
@@ -777,156 +615,7 @@
       });
     });
 
-    // ====== HISTÓRICO – localStorage ======
-    const LS_KEY = "historicoReclamacoesRO";
-
-    function carregarHistoricoCompleto() {
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (!raw) return {};
-        return JSON.parse(raw);
-      } catch (e) {
-        console.error("Erro ao ler histórico:", e);
-        return {};
-      }
-    }
-
-    function salvarHistoricoCompleto(obj) {
-      localStorage.setItem(LS_KEY, JSON.stringify(obj));
-    }
-
-    function obterHistorico(numeroRO) {
-      const all = carregarHistoricoCompleto();
-      return all[numeroRO] || [];
-    }
-
-    function salvarEntradaHistorico(numeroRO, entrada) {
-      const all = carregarHistoricoCompleto();
-      if (!all[numeroRO]) all[numeroRO] = [];
-      all[numeroRO].push(entrada);
-      salvarHistoricoCompleto(all);
-    }
-
-    function renderizarHistorico(numeroRO) {
-      const historico = obterHistorico(numeroRO);
-      historyContainer.innerHTML = "";
-
-      if (!historico.length) {
-        historyContainer.innerHTML = `
-          <div class="history-empty">
-            Nenhum histórico registrado para esse Número RO ainda.
-          </div>
-        `;
-        return;
-      }
-
-      historico.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        div.innerHTML = `
-          <div class="history-meta">
-            ${new Date(item.dataHora).toLocaleString("pt-BR")} · ${item.usuario || "Usuário local"}
-          </div>
-          <div class="history-text">${item.texto}</div>
-        `;
-        if (item.imagemDataUrl) {
-          const img = document.createElement("img");
-          img.src = item.imagemDataUrl;
-          img.className = "history-image";
-          img.alt = "Evidência";
-          div.appendChild(img);
-        }
-        historyContainer.appendChild(div);
-      });
-    }
-
-    // ====== PESQUISA POR NÚMERO RO ======
-    let numeroROSelecionado = null;
-
-    function buscarPorNumeroRO() {
-      const nro = (inputSearch.value || "").trim();
-      if (!nro) {
-        searchStatus.textContent = "Informe um Número RO válido.";
-        selectedInfo.textContent = "";
-        historyContainer.innerHTML = `
-          <div class="history-empty">
-            Nenhuma reclamação selecionada. Pesquise um Número RO para ver o histórico.
-          </div>`;
-        historyFormWrapper.style.display = "none";
-        numeroROSelecionado = null;
-        return;
-      }
-
-      const rec = dadosOriginais.find(r => (r.numeroRO || "").toLowerCase() === nro.toLowerCase());
-      if (!rec) {
-        searchStatus.textContent = `Reclamação com Número RO "${nro}" não encontrada na base.`;
-        selectedInfo.textContent = "";
-        historyContainer.innerHTML = `
-          <div class="history-empty">
-            Esse Número RO não existe na base atual.
-          </div>`;
-        historyFormWrapper.style.display = "none";
-        numeroROSelecionado = null;
-        return;
-      }
-
-      searchStatus.textContent = "";
-      numeroROSelecionado = rec.numeroRO;
-      selectedInfo.innerHTML = `
-        <strong>Selecionado:</strong> RO ${rec.numeroRO} · ${rec.cliente} · 
-        ${rec.dataAbertura || ""} · Motivo: ${rec.motivo || ""} · Status: ${rec.situacaoRO || ""}
-      `;
-
-      renderizarHistorico(numeroROSelecionado);
-      historyFormWrapper.style.display = "block";
-    }
-
-    btnSearch.addEventListener("click", buscarPorNumeroRO);
-    inputSearch.addEventListener("keyup", e => {
-      if (e.key === "Enter") buscarPorNumeroRO();
-    });
-
-    // ====== SALVAR NOVO HISTÓRICO ======
-    btnSaveHistory.addEventListener("click", () => {
-      if (!numeroROSelecionado) {
-        alert("Primeiro pesquise e selecione uma reclamação pelo Número RO.");
-        return;
-      }
-      const texto = historyText.value.trim();
-      if (!texto) {
-        alert("Digite uma descrição para o histórico.");
-        return;
-      }
-
-      const entradaBase = {
-        dataHora: new Date().toISOString(),
-        texto,
-        usuario: "Usuário local",
-        imagemDataUrl: null
-      };
-
-      const file = historyImage.files[0];
-      if (!file) {
-        salvarEntradaHistorico(numeroROSelecionado, entradaBase);
-        historyText.value = "";
-        historyImage.value = "";
-        renderizarHistorico(numeroROSelecionado);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        entradaBase.imagemDataUrl = ev.target.result;
-        salvarEntradaHistorico(numeroROSelecionado, entradaBase);
-        historyText.value = "";
-        historyImage.value = "";
-        renderizarHistorico(numeroROSelecionado);
-      };
-      reader.readAsDataURL(file);
-    });
-
     // ====== TEMA CLARO/ESCURO ======
-    const toggleThemeBtn = document.getElementById("toggle-theme");
     toggleThemeBtn.addEventListener("click", () => {
       document.body.classList.toggle("dark");
     });
