@@ -1,627 +1,183 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Dashboard RO – Reclamações</title>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    * { box-sizing: border-box; }
-    :root {
-      --bg-main: #f3f4f6;
-      --bg-card: #ffffff;
-      --bg-header: #111827;
-      --text-main: #111827;
-      --text-muted: #6b7280;
-      --accent: #2563eb;
-      --accent-soft: #dbeafe;
-      --border-soft: #e5e7eb;
-    }
-    body.dark {
-      --bg-main: #020617;
-      --bg-card: #020617;
-      --bg-header: #020617;
-      --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-      --accent: #22c55e;
-      --accent-soft: #064e3b;
-      --border-soft: #111827;
-    }
-    body {
-      margin: 0;
-      padding: 0;
-      background: var(--bg-main);
-      color: var(--text-main);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    .shell {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
-    }
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .title-block h1 {
-      margin: 0;
-      font-size: 26px;
-      font-weight: 700;
-    }
-    .title-block span {
-      display: block;
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-    .top-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .btn {
-      border: 1px solid var(--border-soft);
-      background: var(--bg-card);
-      color: var(--text-main);
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: 0.15s ease;
-    }
-    .btn span.icon { font-size: 14px; }
-    .btn:hover {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-    }
-    .btn-toggle {
-      background: #111827;
-      color: #f9fafb;
-      border-color: #111827;
-    }
-    body.dark .btn-toggle {
-      background: #f9fafb;
-      color: #111827;
-      border-color: #f9fafb;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: rgba(148, 163, 184, 0.06);
-      color: var(--text-muted);
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    .card {
-      background: var(--bg-card);
-      border-radius: 14px;
-      padding: 12px 14px;
-      border: 1px solid var(--border-soft);
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .card-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .card-icon {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 14px;
-    }
-    .card-value {
-      font-size: 22px;
-      font-weight: 700;
-    }
-    .card-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .panel {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 14px 16px 18px;
-      border: 1px solid var(--border-soft);
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      margin-bottom: 18px;
-    }
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      gap: 8px;
-    }
-    .panel-header h3 {
-      margin: 0;
-      font-size: 15px;
-    }
-    .panel-header span {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .filters {
-      display: inline-flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .filter-btn {
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: transparent;
-      padding: 4px 10px;
-      font-size: 11px;
-      cursor: pointer;
-      color: var(--text-muted);
-      transition: 0.15s ease;
-    }
-    .filter-btn.active {
-      background: var(--accent);
-      color: #f9fafb;
-      border-color: var(--accent);
-    }
-
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 2fr 1.2fr;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    thead { background: #e0f2fe; }
-    th, td {
-      padding: 6px 8px;
-      border-bottom: 1px solid var(--border-soft);
-    }
-    th {
-      text-align: left;
-      font-weight: 600;
-    }
-    tbody tr:hover {
-      background: rgba(148, 163, 184, 0.10);
-    }
-
-    @media (max-width: 900px) {
-      .cards {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .charts-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    @media (max-width: 640px) {
-      .shell {
-        padding-inline: 10px;
-      }
-      .cards {
-        grid-template-columns: 1fr;
-      }
-      .top-bar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-    }
+    body { font-family: Arial, sans-serif; background:#f4f4f8; margin:0; padding:20px }
+    .card { background:#fff; padding:18px; border-radius:10px; margin:10px; box-shadow:0 0 8px #0001;
+            display:inline-block; min-width:260px; text-align:center }
+    .card h3 { margin:0; font-size:1.1rem; color:#222 }
+    .card span { font-size:1.8rem; font-weight:bold; color:#1a73e8 }
+    .section { background:#fff; border-radius:10px; padding:10px; margin-top:18px; box-shadow:0 0 8px #0001 }
+    canvas { width:100% !important; max-height:360px }
+    table { width:100%; border-collapse:collapse; margin-top:10px }
+    th, td { padding:8px; border:1px solid #ccc; font-size:.9rem }
+    th { background:#eafbff }
+    .filter-btn { background:#1a73e8; color:#fff; border:none; padding:7px 14px;
+                  margin:5px; border-radius:6px; cursor:pointer }
   </style>
 </head>
+
 <body>
-  <div class="shell">
-    <div class="top-bar">
-      <div class="title-block">
-        <h1>Dashboard RO – Reclamações</h1>
-        <span id="subtitle-filter">Carregando dados da planilha (dados.csv)...</span>
-      </div>
-      <div class="top-actions">
-        <button class="btn btn-toggle" id="toggle-theme">
-          <span class="icon">🌗</span> Tema claro/escuro
-        </button>
-        <span class="badge">
-          <span>📁</span> Base Excel convertida em CSV
-        </span>
-      </div>
-    </div>
 
-    <!-- CARDS -->
-    <div class="cards">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-label">Total de ROs</span>
-          <div class="card-icon">📊</div>
-        </div>
-        <div class="card-value" id="card-total"></div>
-        <div class="card-sub">Quantidade de ROs na base filtrada</div>
-      </div>
+<h1>Dashboard RO – Reclamações</h1>
+<p>Dados carregados automaticamente do arquivo: <b>dados.csv</b></p>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-label">Toneladas reclamadas</span>
-          <div class="card-icon">⚖️</div>
-        </div>
-        <div class="card-value" id="card-ton"></div>
-        <div class="card-sub">Soma de Reclamado Ton</div>
-      </div>
+<!-- Indicadores -->
+<div style="display:flex;flex-wrap:wrap">
+  <div class="card"><h3>Total de ROs</h3><span id="totalROs">0</span></div>
+  <div class="card"><h3>Tons Reclamados</h3><span id="totalTon">0</span></div>
+  <div class="card"><h3>Área Reclamada (m²)</h3><span id="totalM2">0</span></div>
+  <div class="card"><h3>% com FP Realizado</h3><span id="percentFP">0%</span></div>
+</div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-label">Área reclamada (m²)</span>
-          <div class="card-icon">📐</div>
-        </div>
-        <div class="card-value" id="card-m2"></div>
-        <div class="card-sub">Soma de Reclamado m²</div>
-      </div>
+<!-- Filtros por Status -->
+<div class="section">
+  <button class="filter-btn" onclick="filtrarTabela('Todas')">Todas</button>
+  <button class="filter-btn" onclick="filtrarTabela('')">Sem Situação</button>
+  <span id="statusBtns"></span>
+</div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-label">% com FP realizado</span>
-          <div class="card-icon">✅</div>
-        </div>
-        <div class="card-value" id="card-percent-fp"></div>
-        <div class="card-sub">ROs com Qtd de FP > 0</div>
-      </div>
-    </div>
-
-    <!-- FILTROS -->
-    <div class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>Filtros rápidos de status</h3>
-          <span>Baseado na coluna "Situação atual do RO" (coluna K)</span>
-        </div>
-        <div class="filters">
-          <button class="filter-btn active" data-status="todas">Todas</button>
-          <button class="filter-btn" data-status="Status não informado">Sem situação</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- GRÁFICOS -->
-    <div class="charts-grid">
-      <div class="panel">
-        <div class="panel-header">
-          <div>
-            <h3>ROs por Motivo</h3>
-            <span>Baseado na coluna "Motivo"</span>
-          </div>
-        </div>
-        <canvas id="chart-motivo"></canvas>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <div>
-            <h3>ROs por Situação atual</h3>
-            <span>Clique em um status para filtrar o detalhamento</span>
-          </div>
-        </div>
-        <canvas id="chart-status"></canvas>
-      </div>
-    </div>
-
-    <!-- TABELA -->
-    <div class="panel">
-      <div class="panel-header">
-        <div>
-          <h3>Detalhamento das Reclamações</h3>
-          <span>Dados vindos da sua planilha (dados.csv)</span>
-        </div>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Nº RO</th>
-            <th>Cliente</th>
-            <th>Data Abertura</th>
-            <th>Motivo</th>
-            <th>Situação atual RO</th>
-            <th>Qtd FP</th>
-            <th>Último FP</th>
-            <th>Dias Últ. Status</th>
-            <th>Ton</th>
-            <th>m²</th>
-            <th>Coment. Qualidade</th>
-            <th>Coment. Pós-vendas</th>
-            <th>Link</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-reclamacoes"></tbody>
-      </table>
-    </div>
+<!-- Gráficos -->
+<div style="display:flex; gap:15px; flex-wrap:wrap">
+  <div class="section" style="flex:1">
+    <h3>ROs por Motivo</h3>
+    <canvas id="motivoChart"></canvas>
   </div>
+  <div class="section" style="flex:1">
+    <h3>ROs por Situação Atual</h3>
+    <canvas id="statusChart"></canvas>
+  </div>
+</div>
 
-  <script>
-    let dadosOriginais = [];
-    let dadosFiltrados = [];
-    let filtroAtual = "todas";
-    let chartMotivo, chartStatus;
-    let currentStatuses = [];
+<!-- Tabela -->
+<div class="section">
+  <h3>Detalhamento das Reclamações</h3>
+  <table id="tabelaRO">
+    <thead>
+      <tr>
+        <th>Nº RO</th><th>Cliente</th><th>Data</th><th>Motivo</th>
+        <th>Situação Atual</th><th>Qtd FP</th><th>Último FP</th><th>Tons</th><th>m²</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-    const elSubtitle  = document.getElementById("subtitle-filter");
-    const elTotal     = document.getElementById("card-total");
-    const elTon       = document.getElementById("card-ton");
-    const elM2        = document.getElementById("card-m2");
-    const elPercentFP = document.getElementById("card-percent-fp");
-    const elTbody     = document.getElementById("tbody-reclamacoes");
-    const filtroBtns  = document.querySelectorAll(".filter-btn");
-    const toggleThemeBtn = document.getElementById("toggle-theme");
 
-    // ====== CARREGAR CSV (dados.csv) ======
-    function carregarCSV() {
-      fetch("dados.csv")
-        .then(resp => {
-          if (!resp.ok) throw new Error("Não foi possível localizar dados.csv");
-          return resp.text();
-        })
-        .then(csvText => {
-          const linhas = csvText.split(/\r?\n/).filter(l => l.trim() !== "");
-          if (linhas.length < 2) throw new Error("CSV sem dados.");
+<script>
+let dados = [];
+let tabela = document.querySelector("#tabelaRO tbody");
+let motivoChart, statusChart;
 
-          // Detecta delimitador ; ou ,
-          const primeiraLinha = linhas[0];
-          const delimitador = primeiraLinha.includes(";") ? ";" : ",";
+/* 🧹 REMOVE BOM INVISÍVEL */
+function limparBOM(str){
+  return str.replace("\ufeff","").trim();
+}
 
-          const headers = primeiraLinha.split(delimitador).map(h => h.trim());
-          function idx(nome) {
-            return headers.indexOf(nome);
-          }
+/* 📥 CARREGA CSV */
+fetch("dados.csv")
+  .then(res => res.text())
+  .then(texto => processarCSV(texto));
 
-          const idxCliente   = idx("Cliente");
-          const idxNumRO     = idx("Número RO");
-          const idxDataAbert = idx("Data Abertura RO");
-          const idxUltSts    = idx("Ult Sts");
-          const idxInfoCl    = idx("Informação Solicitada ao Cliente");
-          const idxDiasSt    = idx("Dias Útimo Status");
-          const idxMotivo    = idx("Motivo");
-          const idxTon       = idx("Reclamado Ton");
-          const idxM2        = idx("Reclamado M2");
-          const idxComQual   = idx("Comentários da Qualidade");
-          const idxSitRO     = idx("Situação atual do RO");
-          const idxQtdFP     = idx("Qtd de FP realizado");
-          const idxUltFP     = idx("Último FP realizado");
-          const idxComPos    = idx("Comentários do Pós vendas");
-          const idxLink      = idx("Link");
+function processarCSV(csv){
+  const linhas = csv.split("\n").filter(l => l.trim() !== "");
+  const headers = limparBOM(linhas[0]).split(",").map(h=>limparBOM(h));
 
-          dadosOriginais = linhas.slice(1).map(linha => {
-            const cols = linha.split(delimitador);
-            function val(i) {
-              if (i === -1 || i >= cols.length) return "";
-              return cols[i].trim();
-            }
-            function num(i) {
-              const v = val(i).replace(".", "").replace(",", ".");
-              const n = parseFloat(v);
-              return isNaN(n) ? null : n;
-            }
+  linhas.slice(1).forEach(linha =>{
+    const col = linha.split(",");
+    if(col.length < 5) return;
+    let obj = {};
+    headers.forEach((h,i)=> obj[h] = limparBOM(col[i] || ""));
+    dados.push(obj);
+  });
 
-            const situacao = val(idxSitRO) || "Status não informado";
-            const qtdFP = num(idxQtdFP);
+  atualizarDashboard(dados);
+}
 
-            return {
-              cliente: val(idxCliente),
-              numeroRO: val(idxNumRO),
-              dataAbertura: val(idxDataAbert),
-              ultSts: val(idxUltSts),
-              infoSolicitada: val(idxInfoCl),
-              diasUltimoStatus: val(idxDiasSt),
-              motivo: val(idxMotivo),
-              reclamadoTon: num(idxTon),
-              reclamadoM2: num(idxM2),
-              comentariosQualidade: val(idxComQual),
-              situacaoRO: situacao,
-              qtdFP: qtdFP,
-              ultimoFP: val(idxUltFP),
-              comentariosPosVendas: val(idxComPos),
-              link: val(idxLink),
-              status: situacao  // usado em filtros/gráficos
-            };
-          }).filter(r => r.numeroRO); // ignora linhas vazias
+/* 📊 ATUALIZA MÉTRICAS + GRÁFICOS + TABELA */
+function atualizarDashboard(base){
+  document.querySelector("#totalROs").innerText = base.length;
+  document.querySelector("#totalTon").innerText = soma(base,"Reclamado Ton");
+  document.querySelector("#totalM2").innerText = soma(base,"Reclamado M2");
+  document.querySelector("#percentFP").innerText = 
+      parseInt((base.filter(r=>parseInt(r["Qtd de FP realizado"])>0).length / base.length)*100) + "%";
 
-          dadosFiltrados = [...dadosOriginais];
-          elSubtitle.textContent = "Visão geral de todas as reclamações (base: dados.csv)";
-          atualizarDashboard();
-        })
-        .catch(err => {
-          console.error(err);
-          elSubtitle.textContent = "Erro ao carregar dados.csv: " + err.message;
-        });
-    }
+  preencherTabela(base);
+  desenharGraficos(base);
+}
 
-    // ====== FILTRO POR STATUS ======
-    function aplicarFiltroStatus(status) {
-      filtroAtual = status;
+/* ➕ SOMA NUMÉRICA */
+function soma(arr,campo){
+  return arr.reduce((t,v)=> t + (parseFloat(v[campo]) || 0),0).toFixed(1);
+}
 
-      filtroBtns.forEach(b => {
-        const s = b.getAttribute("data-status");
-        b.classList.toggle("active", s === status);
-        if (status === "todas" && s === "todas") b.classList.add("active");
-      });
+/* 📋 MONTAR TABELA */
+function preencherTabela(base){
+  tabela.innerHTML = "";
+  base.forEach(r=>{
+    tabela.innerHTML += `
+      <tr>
+        <td>${r["Número RO"]||""}</td>
+        <td>${r.Cliente||""}</td>
+        <td>${r["Data Abertura RO"]||""}</td>
+        <td>${r.Motivo||""}</td>
+        <td>${r["Situação atual do RO"]||""}</td>
+        <td>${r["Qtd de FP realizado"]||""}</td>
+        <td>${r["Último FP realizado"]||""}</td>
+        <td>${r["Reclamado Ton"]||""}</td>
+        <td>${r["Reclamado M2"]||""}</td>
+      </tr>`;
+  });
+}
 
-      if (status === "todas") {
-        dadosFiltrados = [...dadosOriginais];
-        elSubtitle.textContent = "Visão geral de todas as reclamações (base: dados.csv)";
-      } else {
-        dadosFiltrados = dadosOriginais.filter(r => r.status === status);
-        elSubtitle.textContent = `Filtrando por status: ${status}`;
-      }
+/* 🎯 Gráficos */
+function desenharGraficos(base){
+  const motivos = {};
+  const status = {};
 
-      atualizarDashboard();
-    }
+  base.forEach(r=>{
+    motivos[r.Motivo] = (motivos[r.Motivo] || 0) +1;
+    status[r["Situação atual do RO"]] = (status[r["Situação atual do RO"]] ||1);
+  });
 
-    // ====== DASHBOARD (cards, gráficos, tabela) ======
-    let chartMotivo, chartStatus, currentStatuses;
+  atualizarGrafico("motivoChart", motivoChart,
+    Object.keys(motivos), Object.values(motivos),
+    "ROs por Motivo", "#4aa3ff");
 
-    function atualizarDashboard() {
-      const total = dadosFiltrados.length;
-      const somaTon = dadosFiltrados.reduce((acc, r) => acc + (r.reclamadoTon || 0), 0);
-      const somaM2  = dadosFiltrados.reduce((acc, r) => acc + (r.reclamadoM2  || 0), 0);
-      const comFP   = dadosFiltrados.filter(r => (r.qtdFP || 0) > 0).length;
-      const percFP  = total > 0 ? (comFP / total) * 100 : 0;
+  atualizarGrafico("statusChart", statusChart,
+    Object.keys(status), Object.values(status),
+    "ROs por Situação Atual", "#ffc85b", true);
+}
 
-      elTotal.textContent = total;
-      elTon.textContent   = somaTon.toLocaleString("pt-BR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
-      elM2.textContent    = somaM2.toLocaleString("pt-BR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
-      elPercentFP.textContent = percFP.toFixed(0) + "%";
+function atualizarGrafico(id, ref, labels, data, titulo, cor, pizza){
+  if(ref) ref.destroy();
+  ref = new Chart(document.getElementById(id), {
+    type: pizza ? "doughnut":"bar",
+    data: { labels,
+      datasets:[{ data, backgroundColor: ["#4aa3ff","#ff7597","#ffc85b","#68d391","#9d4edd"] }]
+    },
+    options:{ responsive:true }
+  });
 
-      // tabela
-      elTbody.innerHTML = "";
-      dadosFiltrados.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${r.numeroRO || ""}</td>
-          <td>${r.cliente || ""}</td>
-          <td>${r.dataAbertura || ""}</td>
-          <td>${r.motivo || ""}</td>
-          <td>${r.situacaoRO || ""}</td>
-          <td>${r.qtdFP != null ? r.qtdFP : ""}</td>
-          <td>${r.ultimoFP || ""}</td>
-          <td>${r.diasUltimoStatus || ""}</td>
-          <td>${r.reclamadoTon != null ? r.reclamadoTon.toLocaleString("pt-BR", {maximumFractionDigits: 2}) : ""}</td>
-          <td>${r.reclamadoM2  != null ? r.reclamadoM2.toLocaleString("pt-BR",  {maximumFractionDigits: 2}) : ""}</td>
-          <td>${r.comentariosQualidade || ""}</td>
-          <td>${r.comentariosPosVendas || ""}</td>
-          <td>${r.link || ""}</td>
-        `;
-        elTbody.appendChild(tr);
-      });
+  if(id==="statusChart") ref.canvas.onclick = evt => {
+    const ponto = ref.getElementsAtEventForMode(evt,"nearest",{intersect:true},false)[0];
+    if(!ponto) return;
+    filtrarTabela(labels[ponto.index]);
+  };
 
-      // gráfico Motivo
-      const motivos = [...new Set(dadosFiltrados.map(r => r.motivo || "Motivo não informado"))];
-      const qtdPorMotivo = motivos.map(m =>
-        dadosFiltrados.filter(r => (r.motivo || "Motivo não informado") === m).length
-      );
+  if(id==="motivoChart") motivoChart = ref; else statusChart = ref;
+}
 
-      const ctxMotivo = document.getElementById("chart-motivo");
-      if (!chartMotivo) {
-        chartMotivo = new Chart(ctxMotivo, {
-          type: "bar",
-          data: {
-            labels: motivos,
-            datasets: [
-              {
-                label: "Qtd de ROs",
-                data: qtdPorMotivo,
-                backgroundColor: "#93c5fd"
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: { beginAtZero: true, ticks: { stepSize: 1 } }
-            }
-          }
-        });
-      } else {
-        chartMotivo.data.labels = motivos;
-        chartMotivo.data.datasets[0].data = qtdPorMotivo;
-        chartMotivo.update();
-      }
+/* 🔍 FILTRO */
+function filtrarTabela(valor){
+  let filtrado = valor==="Todas" ? dados :
+    dados.filter(r => (r["Situação atual do RO"]||"") === valor );
+  atualizarDashboard(filtrado);
+}
+</script>
 
-      // gráfico Status
-      currentStatuses = [...new Set(dadosFiltrados.map(r => r.status || "Status não informado"))];
-      const qtdPorStatus = currentStatuses.map(s =>
-        dadosFiltrados.filter(r => (r.status || "Status não informado") === s).length
-      );
-
-      const ctxStatus = document.getElementById("chart-status");
-      const coresStatus = ["#3b82f6", "#ec4899", "#f97316", "#22c55e", "#a855f7", "#facc15"];
-
-      const chartStatusConfig = {
-        type: "doughnut",
-        data: {
-          labels: currentStatuses,
-          datasets: [
-            {
-              data: qtdPorStatus,
-              backgroundColor: coresStatus.slice(0, currentStatuses.length)
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          onClick: (event, elements) => {
-            if (!elements.length) return;
-            const index = elements[0].index;
-            const statusClicado = currentStatuses[index];
-
-            if (filtroAtual === statusClicado) {
-              aplicarFiltroStatus("todas");
-            } else {
-              aplicarFiltroStatus(statusClicado);
-            }
-          }
-        }
-      };
-
-      if (!chartStatus) {
-        chartStatus = new Chart(ctxStatus, chartStatusConfig);
-      } else {
-        chartStatus.data.labels = currentStatuses;
-        chartStatus.data.datasets[0].data = qtdPorStatus;
-        chartStatus.options.onClick = chartStatusConfig.options.onClick;
-        chartStatus.update();
-      }
-    }
-
-    // ====== BOTÕES DE FILTRO RÁPIDO ======
-    filtroBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const status = btn.getAttribute("data-status");
-        aplicarFiltroStatus(status);
-      });
-    });
-
-    // ====== TEMA CLARO/ESCURO ======
-    toggleThemeBtn.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-    });
-
-    // ====== INICIALIZAÇÃO ======
-    carregarCSV();
-  </script>
 </body>
 </html>
