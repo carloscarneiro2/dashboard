@@ -6,17 +6,26 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background:#f4f4f8; margin:0; padding:20px }
-    .card { background:#fff; padding:18px; border-radius:10px; margin:10px; box-shadow:0 0 8px #0001;
-            display:inline-block; min-width:260px; text-align:center }
-    .card h3 { margin:0; font-size:1.1rem; color:#222 }
+    h1 { margin-top:0 }
+    .card {
+      background:#fff; padding:18px; border-radius:10px; margin:10px;
+      box-shadow:0 0 8px #0001; display:inline-block; min-width:260px; text-align:center;
+    }
+    .card h3 { margin:0; font-size:1.05rem; color:#222 }
     .card span { font-size:1.8rem; font-weight:bold; color:#1a73e8 }
-    .section { background:#fff; border-radius:10px; padding:10px; margin-top:18px; box-shadow:0 0 8px #0001 }
+    .section {
+      background:#fff; border-radius:10px; padding:10px 14px;
+      margin-top:18px; box-shadow:0 0 8px #0001
+    }
     canvas { width:100% !important; max-height:360px }
     table { width:100%; border-collapse:collapse; margin-top:10px }
     th, td { padding:8px; border:1px solid #ccc; font-size:.9rem }
     th { background:#eafbff }
-    .filter-btn { background:#1a73e8; color:#fff; border:none; padding:7px 14px;
-                  margin:5px; border-radius:6px; cursor:pointer }
+    .filter-btn {
+      background:#1a73e8; color:#fff; border:none; padding:7px 14px;
+      margin:5px 5px 0 0; border-radius:6px; cursor:pointer; font-size:.85rem;
+    }
+    .filter-btn.secondary { background:#555 }
   </style>
 </head>
 
@@ -28,15 +37,15 @@
 <!-- Indicadores -->
 <div style="display:flex;flex-wrap:wrap">
   <div class="card"><h3>Total de ROs</h3><span id="totalROs">0</span></div>
-  <div class="card"><h3>Tons Reclamados</h3><span id="totalTon">0</span></div>
-  <div class="card"><h3>Área Reclamada (m²)</h3><span id="totalM2">0</span></div>
+  <div class="card"><h3>Tons Reclamados</h3><span id="totalTon">0.0</span></div>
+  <div class="card"><h3>Área Reclamada (m²)</h3><span id="totalM2">0.0</span></div>
   <div class="card"><h3>% com FP Realizado</h3><span id="percentFP">0%</span></div>
 </div>
 
 <!-- Filtros por Status -->
 <div class="section">
-  <button class="filter-btn" onclick="filtrarTabela('Todas')">Todas</button>
-  <button class="filter-btn" onclick="filtrarTabela('')">Sem Situação</button>
+  <button class="filter-btn secondary" onclick="aplicarFiltroStatus('todas')">Todas</button>
+  <button class="filter-btn secondary" onclick="aplicarFiltroStatus('sem_situacao')">Sem Situação</button>
   <span id="statusBtns"></span>
 </div>
 
@@ -58,124 +67,215 @@
   <table id="tabelaRO">
     <thead>
       <tr>
-        <th>Nº RO</th><th>Cliente</th><th>Data</th><th>Motivo</th>
-        <th>Situação Atual</th><th>Qtd FP</th><th>Último FP</th><th>Tons</th><th>m²</th>
+        <th>Nº RO</th>
+        <th>Cliente</th>
+        <th>Data Abertura</th>
+        <th>Motivo</th>
+        <th>Situação Atual RO</th>
+        <th>Qtd FP</th>
+        <th>Último FP</th>
+        <th>Tons</th>
+        <th>m²</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 </div>
 
-
 <script>
-let dados = [];
-let tabela = document.querySelector("#tabelaRO tbody");
+let dadosOriginais = [];
+let dadosFiltrados = [];
 let motivoChart, statusChart;
 
-/* 🧹 REMOVE BOM INVISÍVEL */
-function limparBOM(str){
-  return str.replace("\ufeff","").trim();
+/* Remove BOM invisível e espaços */
+function limparCampo(str) {
+  if (!str) return "";
+  return str.replace("\ufeff", "").trim();
 }
 
-/* 📥 CARREGA CSV */
+/* Carrega CSV do GitHub */
 fetch("dados.csv")
   .then(res => res.text())
-  .then(texto => processarCSV(texto));
-
-function processarCSV(csv){
-  const linhas = csv.split("\n").filter(l => l.trim() !== "");
-  const headers = limparBOM(linhas[0]).split(",").map(h=>limparBOM(h));
-
-  linhas.slice(1).forEach(linha =>{
-    const col = linha.split(",");
-    if(col.length < 5) return;
-    let obj = {};
-    headers.forEach((h,i)=> obj[h] = limparBOM(col[i] || ""));
-    dados.push(obj);
+  .then(texto => processarCSV(texto))
+  .catch(err => {
+    console.error("Erro ao carregar CSV:", err);
   });
 
-  atualizarDashboard(dados);
+function processarCSV(csv) {
+  const linhasBrutas = csv.split(/\r?\n/).filter(l => l.trim() !== "");
+  if (linhasBrutas.length < 2) return;
+
+  // Detecta se separador é ; ou ,
+  const primeiraLinha = linhasBrutas[0];
+  const delimitador = primeiraLinha.includes(";") ? ";" : ",";
+
+  const linhasDados = linhasBrutas.slice(1); // ignora cabeçalho
+
+  dadosOriginais = linhasDados.map(linha => {
+    const cols = linha.split(delimitador);
+
+    function val(i) {
+      if (i >= cols.length) return "";
+      return limparCampo(cols[i]);
+    }
+    function num(i) {
+      const v = val(i).replace(".", "").replace(",", ".");
+      const n = parseFloat(v);
+      return isNaN(n) ? 0 : n;
+    }
+
+    // POSIÇÕES FIXAS (baseadas na sua planilha)
+    const cliente        = val(0);
+    const numeroRO       = val(1);
+    const dataAbertura   = val(2);
+    const motivo         = val(6) || "Motivo não informado";
+    const situacaoRO     = val(10) || "Status não informado";
+    const qtdFP          = val(11);
+    const ultFP          = val(12);
+    const ton            = num(7);
+    const m2             = num(8);
+
+    if (!numeroRO) return null; // pula linhas vazias
+
+    return { cliente, numeroRO, dataAbertura, motivo, situacaoRO, qtdFP, ultFP, ton, m2 };
+  }).filter(r => r !== null);
+
+  dadosFiltrados = [...dadosOriginais];
+  atualizarDashboard();
 }
 
-/* 📊 ATUALIZA MÉTRICAS + GRÁFICOS + TABELA */
-function atualizarDashboard(base){
-  document.querySelector("#totalROs").innerText = base.length;
-  document.querySelector("#totalTon").innerText = soma(base,"Reclamado Ton");
-  document.querySelector("#totalM2").innerText = soma(base,"Reclamado M2");
-  document.querySelector("#percentFP").innerText = 
-      parseInt((base.filter(r=>parseInt(r["Qtd de FP realizado"])>0).length / base.length)*100) + "%";
+/* Atualiza cards, tabela e gráficos */
+function atualizarDashboard() {
+  const base = dadosFiltrados;
 
+  // Cards
+  const total = base.length;
+  const somaTon = base.reduce((t, r) => t + (r.ton || 0), 0);
+  const somaM2 = base.reduce((t, r) => t + (r.m2 || 0), 0);
+  const comFP = base.filter(r => parseFloat(r.qtdFP || "0") > 0).length;
+  const percFP = total > 0 ? (comFP / total) * 100 : 0;
+
+  document.getElementById("totalROs").textContent = total;
+  document.getElementById("totalTon").textContent = somaTon.toFixed(1);
+  document.getElementById("totalM2").textContent = somaM2.toFixed(1);
+  document.getElementById("percentFP").textContent = percFP.toFixed(0) + "%";
+
+  // Tabela
   preencherTabela(base);
+
+  // Gráficos
   desenharGraficos(base);
+
+  // Botões de status dinâmicos
+  montarBotoesStatus();
 }
 
-/* ➕ SOMA NUMÉRICA */
-function soma(arr,campo){
-  return arr.reduce((t,v)=> t + (parseFloat(v[campo]) || 0),0).toFixed(1);
-}
+/* Preenche tabela */
+function preencherTabela(base) {
+  const tbody = document.querySelector("#tabelaRO tbody");
+  tbody.innerHTML = "";
 
-/* 📋 MONTAR TABELA */
-function preencherTabela(base){
-  tabela.innerHTML = "";
-  base.forEach(r=>{
-    tabela.innerHTML += `
-      <tr>
-        <td>${r["Número RO"]||""}</td>
-        <td>${r.Cliente||""}</td>
-        <td>${r["Data Abertura RO"]||""}</td>
-        <td>${r.Motivo||""}</td>
-        <td>${r["Situação atual do RO"]||""}</td>
-        <td>${r["Qtd de FP realizado"]||""}</td>
-        <td>${r["Último FP realizado"]||""}</td>
-        <td>${r["Reclamado Ton"]||""}</td>
-        <td>${r["Reclamado M2"]||""}</td>
-      </tr>`;
+  base.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.numeroRO}</td>
+      <td>${r.cliente}</td>
+      <td>${r.dataAbertura}</td>
+      <td>${r.motivo}</td>
+      <td>${r.situacaoRO}</td>
+      <td>${r.qtdFP}</td>
+      <td>${r.ultFP}</td>
+      <td>${r.ton.toFixed(2)}</td>
+      <td>${r.m2.toFixed(2)}</td>
+    `;
+    tbody.appendChild(tr);
   });
 }
 
-/* 🎯 Gráficos */
-function desenharGraficos(base){
-  const motivos = {};
-  const status = {};
-
-  base.forEach(r=>{
-    motivos[r.Motivo] = (motivos[r.Motivo] || 0) +1;
-    status[r["Situação atual do RO"]] = (status[r["Situação atual do RO"]] ||1);
+/* Desenha gráficos motivo + status */
+function desenharGraficos(base) {
+  // Motivo
+  const countMotivo = {};
+  base.forEach(r => {
+    const key = r.motivo || "Motivo não informado";
+    countMotivo[key] = (countMotivo[key] || 0) + 1;
   });
+  const motivos = Object.keys(countMotivo);
+  const qtdMotivo = Object.values(countMotivo);
 
-  atualizarGrafico("motivoChart", motivoChart,
-    Object.keys(motivos), Object.values(motivos),
-    "ROs por Motivo", "#4aa3ff");
-
-  atualizarGrafico("statusChart", statusChart,
-    Object.keys(status), Object.values(status),
-    "ROs por Situação Atual", "#ffc85b", true);
-}
-
-function atualizarGrafico(id, ref, labels, data, titulo, cor, pizza){
-  if(ref) ref.destroy();
-  ref = new Chart(document.getElementById(id), {
-    type: pizza ? "doughnut":"bar",
-    data: { labels,
-      datasets:[{ data, backgroundColor: ["#4aa3ff","#ff7597","#ffc85b","#68d391","#9d4edd"] }]
+  if (motivoChart) motivoChart.destroy();
+  motivoChart = new Chart(document.getElementById("motivoChart"), {
+    type: "bar",
+    data: {
+      labels: motivos,
+      datasets: [{
+        label: "Qtd de ROs",
+        data: qtdMotivo,
+        backgroundColor: "#4aa3ff"
+      }]
     },
-    options:{ responsive:true }
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
   });
 
-  if(id==="statusChart") ref.canvas.onclick = evt => {
-    const ponto = ref.getElementsAtEventForMode(evt,"nearest",{intersect:true},false)[0];
-    if(!ponto) return;
-    filtrarTabela(labels[ponto.index]);
-  };
+  // Status
+  const countStatus = {};
+  base.forEach(r => {
+    const key = r.situacaoRO || "Status não informado";
+    countStatus[key] = (countStatus[key] || 0) + 1;
+  });
+  const status = Object.keys(countStatus);
+  const qtdStatus = Object.values(countStatus);
 
-  if(id==="motivoChart") motivoChart = ref; else statusChart = ref;
+  if (statusChart) statusChart.destroy();
+  statusChart = new Chart(document.getElementById("statusChart"), {
+    type: "doughnut",
+    data: {
+      labels: status,
+      datasets: [{
+        data: qtdStatus,
+        backgroundColor: ["#4aa3ff","#ff7597","#ffc85b","#68d391","#9d4edd","#f97316"]
+      }]
+    },
+    options: {
+      responsive: true,
+      onClick: (evt, elements) => {
+        if (!elements.length) return;
+        const idx = elements[0].index;
+        const statusClicado = status[idx];
+        aplicarFiltroStatus(statusClicado);
+      }
+    }
+  });
 }
 
-/* 🔍 FILTRO */
-function filtrarTabela(valor){
-  let filtrado = valor==="Todas" ? dados :
-    dados.filter(r => (r["Situação atual do RO"]||"") === valor );
-  atualizarDashboard(filtrado);
+/* Monta botões de status dinamicamente */
+function montarBotoesStatus() {
+  const container = document.getElementById("statusBtns");
+  container.innerHTML = "";
+
+  const statusUnicos = [...new Set(dadosOriginais.map(r => r.situacaoRO || "Status não informado"))];
+  statusUnicos.forEach(s => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn";
+    btn.textContent = s;
+    btn.onclick = () => aplicarFiltroStatus(s);
+    container.appendChild(btn);
+  });
+}
+
+/* Filtro por status */
+function aplicarFiltroStatus(valor) {
+  if (valor === "todas") {
+    dadosFiltrados = [...dadosOriginais];
+  } else if (valor === "sem_situacao") {
+    dadosFiltrados = dadosOriginais.filter(r => !r.situacaoRO || r.situacaoRO === "Status não informado");
+  } else {
+    dadosFiltrados = dadosOriginais.filter(r => (r.situacaoRO || "Status não informado") === valor);
+  }
+  atualizarDashboard();
 }
 </script>
 
